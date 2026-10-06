@@ -32,11 +32,11 @@ After `find-cui`, the skills work in a loop. `audit` reads what the engagement h
 
 Three on-ramps merge in: `triage` for findings someone else wrote, `significant-change-determination` for a change to a certified environment, and `wayfinder` for an engagement with more contested calls than one session can hold.
 
-## The SSP is one file, and one skill writes it
+## The SSP is plain Markdown, and one skill writes it
 
-The engagement's SSP is `ssp/ssp.json`, an OSCAL document. It holds the components, the assets and their categories, the providers and their FedRAMP status, and one conformity statement per objective and component. Only `scribe` changes it. Every other skill that decides something calls `scribe` to record the decision, and `scribe` validates each change with oscal-cli and refuses one that fails.
+The engagement's SSP is the `ssp/` folder, Markdown files with YAML frontmatter. `ssp/system.md` describes the system, each file in `ssp/components/` holds one component with its assets and their categories, or a provider with its FedRAMP status, and each of the 110 requirement files, such as `ssp/3.5.3.md`, holds one conformity statement per objective and component. Only `scribe` changes it. Every other skill that decides something calls `scribe` to record the decision, and `scribe` checks each change with `check_ssp.py` and refuses one that fails.
 
-People read the SSP as Markdown in `view/`, which `scribe` generates from `ssp.json`. Nobody edits `view/`, and no skill reads it. A skill that needs to know what the SSP says asks `scribe` to show it. See `docs/adr/0007-oscal-ssp-is-the-record-and-scribe-writes-it.md`.
+People read the SSP as rendered pages in `view/`, which `scribe` generates from `ssp/`. Nobody edits `view/`, and no skill reads it. A skill that needs to know what the SSP says reads the files under `ssp/` directly. See `docs/adr/0012-markdown-ssp-replaces-oscal.md`.
 
 An unconfirmed fact never goes into a statement. It goes on `scope/open-items.md`, and its objective stays planned until someone confirms it (`docs/adr/0010-open-items-stay-outside-the-record.md`).
 
@@ -64,7 +64,7 @@ Then, in an empty repo for the client:
 
 It asks you to tell it about your role and records your seat from the answer. It scaffolds the engagement repo, sets up the tracker and the labels, and warns you if the regulatory status brief has gone stale.
 
-The new repo has the SSP as one OSCAL document, `ssp/ssp.json`, which only the `scribe` skill changes, and a read-only Markdown view of it in `view/`. It has one folder per requirement in `evidence/`, and the scope, policy, and decision folders the rest of the skills read.
+The new repo has the SSP as Markdown files under `ssp/`, which only the `scribe` skill changes, and a read-only Markdown view of it in `view/`. It has one folder per requirement in `evidence/`, and the scope, policy, and decision folders the rest of the skills read.
 
 ## What it does not cover
 
@@ -84,9 +84,9 @@ Where a rule matters, the skill cites it. Every cited URL is listed once in `ref
 
 Whether something is CUI is a status question, so a skill answers it only from regulation or official guidance. `verify.sh` fails on a citation missing from the register. See `docs/adr/0004-authority-tiers.md`.
 
-## How this repo was published
+## How this repo is published
 
-This public repository is a fresh copy of a private working repository, made on 2026-10-05 with no history. The planning documents and the private term lists the scrub check reads stay in the private repository, because they name real people. That is why the history here starts at one commit.
+The public repository is a snapshot of a private working repository, with no history. The planning documents and the private term lists the scrub check reads stay private, because they name real people.
 
 The control files already reach readers another way. `scripts/sync_dictionary.py` copies them one way into `cmmc-dictionary`, a separate public repository that serves `dictionary.poamslayer.com`, and strips `vault_sources` on the way. A deploy carries no git history, so the site did not have to wait for the gate. It does not settle publishing this repository either. See `docs/adr/0003-dictionary-site-is-a-separate-public-repo.md`.
 
@@ -97,11 +97,8 @@ Read `AGENTS.md` first. It holds the editing rules, and `CONTEXT.md` holds the g
 To check your change before you commit, run the full check:
 
 ```bash
-bash scripts/install_oscal_cli.sh   # once per machine; needs Java 11 or later
 bash scripts/verify.sh
 ```
-
-The install script links `oscal-cli` into `~/.local/bin`, so that folder has to be on your `PATH`.
 
 If you added or changed a citation, also run `python3 scripts/check_links.py`. It needs network access, so `verify.sh` does not run it.
 

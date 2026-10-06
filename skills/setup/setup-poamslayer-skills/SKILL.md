@@ -1,6 +1,6 @@
 ---
 name: setup-poamslayer-skills
-description: "Scaffold a CMMC Level 2 engagement repo: ask about the operator's role and record the seat, lay out CONTEXT.md, scope, the OSCAL SSP and its view, evidence, policies, configure the tracker and triage labels, and check the regulatory status brief is current. Run once in an empty client repo before any other skill."
+description: "Scaffold a CMMC Level 2 engagement repo: ask about the operator's role and record the seat, lay out CONTEXT.md, scope, the Markdown SSP and its view, evidence, policies, configure the tracker and triage labels, and check the regulatory status brief is current. Run once in an empty client repo before any other skill."
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 ## Purpose
 
-This skill turns an empty client repo into an engagement repo in the layout every other skill in this repo expects. It writes the client glossary (`CONTEXT.md`), the decision record folder (`docs/adr/`), the scope folder, the engagement's SSP as one OSCAL document (`ssp/ssp.json`, created by the `scribe` skill's create operation, with its read-only `view/`), one evidence folder per requirement 3.1.1 through 3.14.7, the policies folder, and `.scratch/` for working notes. It also configures the issue tracker and the triage labels the flows read, so `to-poam`, `triage`, `wayfinder`, and `remediate` work without anyone editing files by hand. At the end it checks that the `cmmc-regulatory-status-brief` skill is current, because advice built on a stale brief is worse than no advice.
+This skill turns an empty client repo into an engagement repo in the layout every other skill in this repo expects. It writes the client glossary (`CONTEXT.md`), the decision record folder (`docs/adr/`), the scope folder, the engagement's SSP as a folder of Markdown files (`ssp/`, in the shape the `scribe` skill writes, with its read-only `view/`), one evidence folder per requirement 3.1.1 through 3.14.7, the policies folder, and `.scratch/` for working notes. It also configures the issue tracker and the triage labels the flows read, so `to-poam`, `triage`, `wayfinder`, and `remediate` work without anyone editing files by hand. At the end it checks that the `cmmc-regulatory-status-brief` skill is current, because advice built on a stale brief is worse than no advice.
 
 The first thing it asks is plain: "Tell me about your role." It does not explain seats to the operator; it reads the answer and records the seat itself. The **consultant seat** runs the engagement for a client and hears the engagement vocabulary as is. The **OSC seat** is the organization seeking certification, usually its IT lead. That seat gets plain-language framing and hears who in the company each step needs. The seat is a tone switch, not a gate: both seats travel the same main flow and can reach every skill, and no skill is consultant-only. Every flow that adapts its wording reads the seat from `CONTEXT.md`, so getting it recorded once here is what makes the rest of the skills speak to the right person.
 
@@ -22,7 +22,7 @@ Look at the current repo to understand its starting state. Read whatever exists;
 
 - `git remote -v`: is there a remote, and is it on GitHub? Which repo?
 - `CONTEXT.md`, `AGENTS.md`, and `CLAUDE.md` at the repo root: does any of them exist? Is there already an `## Agent skills` block, or a `## Seat` heading in `CONTEXT.md`?
-- `ssp/` (and `ssp/ssp.json` in particular), `scope/`, `evidence/`, `policies/`, `docs/adr/`: do any of these already exist with files in them? If so, this repo has been scaffolded before or holds someone else's work. Refuse to scaffold over it unless the user says so in this conversation, and then only with `--force` (see Re-running).
+- `ssp/` (and `ssp/system.md` in particular), `scope/`, `evidence/`, `policies/`, `docs/adr/`: do any of these already exist with files in them? If so, this repo has been scaffolded before or holds someone else's work. Refuse to scaffold over it unless the user says so in this conversation, and then only with `--force` (see Re-running).
 - `docs/agents/`: does this skill's prior output already exist?
 - `.scratch/`: a sign the local markdown tracker is already in use.
 - Is the `triage` skill installed? A `triage` folder under `skills/flows/` alongside this repo's skills, or `triage` in your available skills. This decides whether the labels question is worth asking.
@@ -80,9 +80,9 @@ Run the scaffold script from this skill's folder:
 python3 <path to this skill>/scaffold.py --target . --seat <consultant|osc> --client "<client name>" --tracker <github|local>
 ```
 
-The script creates the whole layout: `CONTEXT.md` with the seat, `docs/adr/`, `docs/agents/` (copied from the seed files in this folder, matching the tracker choice), `scope/`, `ssp/ssp.json`, `evidence/` with one subfolder per requirement in `reference/nist-800-171r2-requirements.json`, `policies/`, and `.scratch/`. `ssp.json` and `view/` are the SSP: there is no Markdown SSP file, asset inventory, or responsibility matrix to write. With `--tracker github` it also creates the labels with `gh label create`: the five triage labels, `poam`, `opa`, and the `wayfinder:*` labels (`wayfinder:map`, `wayfinder:research`, `wayfinder:prototype`, `wayfinder:grilling`, `wayfinder:task`). It never overwrites an existing file.
+The script creates the whole layout: `CONTEXT.md` with the seat, `docs/adr/`, `docs/agents/` (copied from the seed files in this folder, matching the tracker choice), `scope/`, the SSP under `ssp/`, `evidence/` with one subfolder per requirement in `reference/nist-800-171r2-requirements.json`, `policies/`, and `.scratch/`. `ssp/` and `view/` are the SSP: there is no separate asset inventory or responsibility matrix to write. With `--tracker github` it also creates the labels with `gh label create`: the five triage labels, `poam`, `opa`, and the `wayfinder:*` labels (`wayfinder:map`, `wayfinder:research`, `wayfinder:prototype`, `wayfinder:grilling`, `wayfinder:task`). It never overwrites an existing file.
 
-The script does not write `ssp/ssp.json` itself. It runs the scribe skill's edit command, `ssp_edit.py create`, with the client name as the system name. That writes an SSP with our profile imported, all 110 requirements present, and every assessment objective planned; copies the profile and catalog into `ssp/oscal/`; validates the result with oscal-cli; and renders `view/`. If `ssp/ssp.json` already exists, the script leaves it alone and prints `skipped: ssp/ssp.json`. Scribe needs Java 11 or later and oscal-cli 3.2.0. If either is missing, the script still writes the rest of the layout, prints `ERROR: ssp/ssp.json was not created.` with scribe's reason, and exits non-zero. Repeat the reason to the user, tell them to run `bash scripts/install_oscal_cli.sh` in the skills repo, and then re-run the script with `--force`, which adds only what is missing.
+The script writes the SSP with scribe's own writer, so it has the shape scribe edits (ADR-0012): `ssp/system.md` with the client name as the system name, an empty `ssp/components/`, and one `ssp/<requirement>.md` for each of the 110 requirements, with every assessment objective planned on the placeholder, `this-system`. Then it runs scribe's check, `check_ssp.py`, and renders `view/` with `render_view.py`. If the SSP already exists, the script leaves every file of it alone and prints `skipped: ssp/ (the SSP exists)`. It needs only Python. If the check fails, which happens only when an existing SSP was damaged by hand, the script prints `ERROR: the SSP fails scribe's check:` with each problem and exits non-zero; repeat the problems to the user, and have the `scribe` skill fix them rather than editing the files yourself.
 
 Then add the `## Agent skills` block. **Pick the file to edit:**
 
@@ -128,9 +128,9 @@ It reads the `as_of` date on the `cmmc-regulatory-status-brief` skill and compar
 
 Then tell the user:
 
-- Setup is complete, and which skills now read these files: `ask-poamslayer` and every flow read the seat; `to-poam`, `triage`, `wayfinder`, and `remediate` read the tracker file and the labels; `audit` and `ssp-lint` read the SSP from `ssp/ssp.json` and the folders under `evidence/`; `domain-modeling` and `grill-with-docs` read `CONTEXT.md` and `docs/adr/`.
-- `ssp/ssp.json` is the SSP record, and `scribe` is the only skill that changes it: every skill that decides something calls scribe to record it. Nobody edits it by hand. The scoping skills (`cmmc-scope-boundary`, `endpoint-and-vdi-scoping`, `printer-and-ot-asset-scoping`, `esp-and-msp-scoping`, and `fips-crypto-scoping` for its out-of-scope verdicts) record assets, categories, and providers in it and read it. `to-ssp`, `ssp-statement-writer`, and `remediate` record conformity statements in it, and `requirement-applicability-matrix` records not applicable and alternative statuses with their reasons. Every skill that reads the SSP, `audit`, `ssp-lint`, and `to-poam` among them, reads `ssp.json` by asking scribe to show it.
-- `view/` is generated from `ssp.json` for people to read, including the asset inventory and the responsibility matrix, and is overwritten on every change. No skill reads it and nobody edits it.
+- Setup is complete, and which skills now read these files: `ask-poamslayer` and every flow read the seat; `to-poam`, `triage`, `wayfinder`, and `remediate` read the tracker file and the labels; `audit` and `ssp-lint` read the SSP under `ssp/` and the folders under `evidence/`; `domain-modeling` and `grill-with-docs` read `CONTEXT.md` and `docs/adr/`.
+- `ssp/` is the SSP record, and `scribe` is the only skill that changes it: every skill that decides something calls scribe to record it. Nobody edits it by hand. The scoping skills (`cmmc-scope-boundary`, `endpoint-and-vdi-scoping`, `printer-and-ot-asset-scoping`, `esp-and-msp-scoping`, and `fips-crypto-scoping` for its out-of-scope verdicts) record assets, categories, and providers in it and read it. `to-ssp`, `ssp-statement-writer`, and `remediate` record conformity statements in it, and `requirement-applicability-matrix` records not applicable and alternative statuses with their reasons. Every skill that reads the SSP, `audit`, `ssp-lint`, and `to-poam` among them, reads the files under `ssp/` directly: the statements are fields in each requirement file's frontmatter.
+- `view/` is generated from `ssp/` for people to read, including the asset inventory and the responsibility matrix, and is overwritten on every change. No skill reads it and nobody edits it.
 - They can edit `docs/agents/*.md` and `CONTEXT.md` directly later.
 - The next step is to run `/ask-poamslayer` with "where do I start".
 
@@ -148,9 +148,10 @@ Then tell the user:
 │       └── domain.md               how skills read CONTEXT.md and the ADRs
 ├── scope/                          data flow, network diagram, open items list, CUI determinations, applicability matrix, FIPS verdicts, one interview file per role
 ├── ssp/
-│   ├── ssp.json                    the SSP record, one OSCAL document; only scribe writes it
-│   └── oscal/                      the profile and catalog ssp.json imports, copied at create
-├── view/                           generated from ssp.json for people; no skill reads it, nobody edits it
+│   ├── system.md                   the system: name, CUI information type, status, users, and the boundary
+│   ├── components/<slug>.md        one per component, with its assets and, for a provider, its role
+│   └── 3.1.1.md ...                one per requirement, statements by objective in frontmatter; only scribe writes the SSP
+├── view/                           generated from ssp/ for people; no skill reads it, nobody edits it
 │   ├── asset-inventory.md
 │   ├── esp-responsibility-matrix.md
 │   └── requirements/3.1.1.md ...   one page per requirement
@@ -178,7 +179,7 @@ or `osc`. Every flow that adapts its wording reads this heading before it speaks
 
 ## Re-running
 
-The script never overwrites a file. If the target already holds any of `CONTEXT.md`, `ssp/`, `scope/`, `evidence/`, or `policies/`, it stops and says so. Passing `--force` tells it to continue, and even then it only adds what is missing: `ssp/ssp.json` if there is none, an evidence folder that does not exist, a seed file under `docs/agents/` that was deleted. Existing files, including a `CONTEXT.md` with the client's terms in it and an `ssp/ssp.json` holding recorded decisions, are left exactly as they were.
+The script never overwrites a file. If the target already holds any of `CONTEXT.md`, `ssp/`, `scope/`, `evidence/`, or `policies/`, it stops and says so. Passing `--force` tells it to continue, and even then it only adds what is missing: an SSP file that is not there, an evidence folder that does not exist, a seed file under `docs/agents/` that was deleted. Existing files, including a `CONTEXT.md` with the client's terms in it and an SSP holding recorded decisions, are left exactly as they were.
 
 Run this skill again only to switch trackers, change the seat, or fill in files that were removed. For a tracker switch, delete `docs/agents/issue-tracker.md` first so the script can write the new one. For a seat change, edit the word under `## Seat` in `CONTEXT.md` by hand; that is faster than re-running.
 

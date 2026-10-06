@@ -26,7 +26,7 @@ This skill answers: is this change to a certified environment significant, meani
 ## Inputs
 
 - The proposed change in one paragraph: what is being added, swapped, migrated, or removed, and when.
-- The certified state: the SSP as assessed, which is the record, `ssp/ssp.json`, at the commit the assessment was made against, with its components, assets and categories, providers, and statements; the network and data flow diagrams; and `scope/external-systems.md` (the 3.1.20 list). Call the Skill tool with `scribe` and ask it to show the record, once in a checkout of that commit and once as it stands now, so the two can be compared. Never read `view/` instead; it is generated for people and can be stale.
+- The certified state: the SSP as assessed, which is the record, the engagement's `ssp/` folder, at the commit the assessment was made against, with its components, assets and categories, and providers in `ssp/components/*.md`, and its statements in the frontmatter of each `ssp/<requirement>.md`; the network and data flow diagrams; and `scope/external-systems.md` (the 3.1.20 list). Read the files directly, once at that commit and once as they stand now, so the two can be compared; `git diff <commit> -- ssp/` lists what changed. Never read `view/` instead; it is generated for people and can be stale.
 - The certification record: assessment date, C3PAO, any requirement or objective assessed N/A, and the CMMC Status Date.
 - For a cloud service: its FedRAMP status or equivalency evidence, and whether it will process, store, or transmit CUI.
 - The name of the Affirming Official and the change-control process reference (3.4.3).

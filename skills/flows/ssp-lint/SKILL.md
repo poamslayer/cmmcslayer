@@ -27,13 +27,16 @@ Many assessors allow only a handful of document corrections during an assessment
 
 ### 1. Pin the scope
 
-Whatever the operator named: one requirement, one family, or the whole SSP. Default to the whole SSP. The SSP is the record, `ssp/ssp.json` (ADR-0007). Read it by calling the Skill tool with `scribe` and asking it to show the record for that scope: one requirement as `3.5.3`, a family as `3.5`, or everything. Never read `view/` instead; the view is generated for people and can be stale.
+Whatever the operator named: one requirement, one family, or the whole SSP. Default to the whole SSP. The SSP is the record, the `ssp/` folder (ADR-0012). Read it directly for that scope: one requirement is `ssp/3.5.3.md`, a family is `ssp/3.5.*.md`, and everything is all 110 requirement files. Each requirement file's frontmatter holds its statements under `objectives`, by letter, each with its component's slug, status, statement, and remarks. The components, the providers, and the assets with their categories are in `ssp/components/`, whatever the scope. Never read `view/` instead; the view is generated for people and can be stale.
 
-If every objective in scope is still planned on "This System" with "Not yet written.", nothing has been written yet. That is a job for `/to-ssp`, not a lint finding.
+Then run scribe's check over the whole record, which only reads it: `python3 <path to the scribe skill>/check_ssp.py .` from the engagement repo. It prints `check_ssp: ok` and a count, or one line per problem, naming the file and, for a statement, the objective.
+
+If every objective in scope is still planned on `this-system` with "Not yet written.", nothing has been written yet. That is a job for `/to-ssp`, not a lint finding.
 
 ### 2. Gather the sources both axes need
 
-- Scribe's showing of the record for the scope: the problems in the record, the components, the providers, the assets and their categories, and every statement with its component, status, and remarks.
+- The record for the scope: the requirement files, and every file in `ssp/components/`.
+- The check's output, as it came back.
 - `evidence/` for the artifacts.
 - `policies/` for the procedures and policies the statements name.
 - `scope/open-items.md` for the facts still waiting on someone.
@@ -41,13 +44,13 @@ If every objective in scope is still planned on "This System" with "Not yet writ
 
 ### 3. Spawn both subagents in parallel
 
-**House style subagent.** Give it scribe's showing of the record and this brief:
+**House style subagent.** Give it the record for the scope, the check's output, and this brief:
 
-> Report, per requirement: (a) every assessment objective with no statement, meaning it is planned on "This System" or on a component with "Not yet written.", naming the letter; (b) every statement containing "to be confirmed", "TBD", "as applicable", "where appropriate", or a future tense promise, quoting it; (c) every statement whose text is about a different component than the one it is recorded on, quoting it and naming both; (d) every statement whose status contradicts its own text, such as implemented where the text says something is missing, or not applicable or alternative where the remarks do not give the reason; (e) every requirement where one narrative is copied across several objectives, or one statement answers objectives it is not recorded on, rather than one statement per objective; (f) every place the definition and enforcement pattern is not applied, meaning the organization-wide decision is restated per component instead of stated once at the objective that asks whether it is defined. Quote the statement for each finding, with its objective in `3.5.3[a]` form and its component. Under 500 words.
+> Report, per requirement: (a) every assessment objective with no statement, meaning its only entry is `this-system` planned with "Not yet written.", or a component's entry is planned with "Not yet written.", a cleared statement that component still owes, naming the letter; (b) every statement containing "to be confirmed", "TBD", "as applicable", "where appropriate", or a future tense promise, quoting it; (c) every statement whose text is about a different component than the one it is recorded on, quoting it and naming both; (d) every statement whose status contradicts its own text, such as implemented where the text says something is missing, or not applicable or alternative where the remarks do not give the reason; (e) every requirement where one narrative is copied across several objectives, or one statement answers objectives it is not recorded on, rather than one statement per objective; (f) every place the definition and enforcement pattern is not applied, meaning the organization-wide decision is restated per component instead of stated once at the objective that asks whether it is defined. Quote the statement for each finding, with its objective in `3.5.3[a]` form and its component. Under 500 words.
 >
-> Then report every line under "Problems in the record", once each, in the operator's words, whatever the scope: the list covers the whole record, and each one is a hand edit to put right: what it means for the SSP an assessor reads, not the rule it breaks. A statement on a component the record does not have describes nothing in the system, so the objective reads as answered by a thing nobody can point to. An asset whose category contradicts its component's leaves the inventory and the statements disagreeing about how that asset is assessed. A category outside the five is not a category an assessor recognizes. An Out-of-Scope Asset with no justification is the first thing an assessor asks about. An alternative or not applicable statement with no reason is a claim with nothing behind it. Say that someone edited the record by hand, since scribe refuses every one of these, and that the fix is to record it again through scribe.
+> Then report every problem line in the check's output, once each, whatever the scope: the check covers the whole record, and each line is a hand edit to put right. Quote the line, then say in the operator's words what it means for the SSP an assessor reads, not the rule it breaks. A statement on a component the record does not have describes nothing in the system, so the objective reads as answered by a thing nobody can point to. An asset whose category contradicts its component's leaves the inventory and the statements disagreeing about how that asset is assessed. A category outside the five is not a category an assessor recognizes. An Out-of-Scope Asset with no justification is the first thing an assessor asks about. An alternative or not applicable statement with no reason is a claim with nothing behind it. Say that someone edited the record by hand, since scribe refuses every one of these, and that the fix is to record it again through scribe.
 
-**Evidence subagent.** Give it scribe's showing of the record, the policies, the evidence folder listing, and this brief:
+**Evidence subagent.** Give it the record for the scope, the policies, the evidence folder listing, and this brief:
 
 > Report, per requirement: (a) every statement that contradicts a policy or procedure in `policies/`, another statement in the record, or the category or justification the record gives an asset, quoting both sides, for example an SSP saying accounts lock after five attempts where the procedure says three, and every justification or statement that cites a policy `policies/` does not hold; (b) every statement naming an artifact that is not in `evidence/<id>/`; (c) every statement on a company component claiming work that the record puts on a provider's component, and every company statement that relies on a provider when the provider's component carries no statement on that objective; (d) every statement that is a claim with no artifact behind it where the objective asks for a practice rather than a document; (e) every artifact that appears to be a draft or a working paper rather than final. Quote the statement, with its objective and component, and the source line for each finding. Under 500 words.
 
@@ -65,7 +68,7 @@ For every "to be confirmed" the house style axis found, do the thing the rule ex
 
 It does not decide whether an objective is MET. That is `/audit`, which reads the evidence against what assessors have accepted. The lint checks the document against itself and against the repo, which is a cheaper and narrower question.
 
-It does not write statements, and it never changes the record: it only asks scribe to show it. It reports what is wrong with the statements, and `/to-ssp` or `ssp-statement-writer` fixes them.
+It does not write statements, and it never changes the record: it only reads the files and runs the check, which reads them too. It reports what is wrong with the statements, and `/to-ssp` or `ssp-statement-writer` fixes them.
 
 ## Sources
 

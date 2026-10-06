@@ -12,6 +12,6 @@ Process skills. Ten are verbatim ports from [mattpocock/skills](https://github.c
 | remediate | rewritten from implement | Drive one ticket to closure through audit |
 | audit | rewritten from tdd | Assess current state per objective, MET or NOT MET |
 | ssp-lint | rewritten from code-review | Two-axis review of the SSP: house style and evidence |
-| scribe | new | The only writer of the engagement's `ssp.json`: other skills call it to record a decision, or to show what the record holds |
+| scribe | new | The only writer of the engagement's SSP, the Markdown files under `ssp/`: other skills call it to record a decision, and read the files themselves |
 | triage | ported with new vocabulary | Findings you did not create become agent-ready tickets |
 | grilling, grill-me, grill-with-docs, handoff, wait-what, research, wizard, writing-for-agents, domain-modeling, to-questionnaire | verbatim | Process primitives |

@@ -36,7 +36,7 @@ This skill answers: what CMMC level does this specific subcontractor actually ne
 - What the subcontractor actually receives: digital CUI, paper-only CUI, FCI only, or no controlled information at all.
 - The subcontractor's position in the supply chain: design authority, prime, build-to-print manufacturer, commercial-off-the-shelf supplier, paper-only or read-only handler, or external service provider.
 - Any attestation form, questionnaire, or "sign here" document the prime has sent.
-- The subcontractor's record, `ssp/ssp.json` in its engagement repo, if one is already underway. Call the Skill tool with `scribe` and ask it to show the record. Never read `view/` instead; it is generated for people and can be stale.
+- The subcontractor's record, the `ssp/` folder in its engagement repo, if one is already underway. Read the files directly: `ssp/components/*.md` for its components, assets, and providers, and the frontmatter of `ssp/<requirement>.md` for its statements. Never read `view/` instead; it is generated for people and can be stale.
 
 ## Method
 

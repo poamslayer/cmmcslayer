@@ -1,14 +1,14 @@
 ---
 name: to-ssp
-description: Turn the grilling, the scoping record, and the recorded decisions into the SSP's conformity statements, one per assessment objective and component, recorded in `ssp/ssp.json` through scribe. No interview, just synthesis of what the engagement has already settled.
+description: Turn the grilling, the scoping record, and the recorded decisions into the SSP's conformity statements, one per assessment objective and component, recorded in the `ssp/` files through scribe. No interview, just synthesis of what the engagement has already settled.
 disable-model-invocation: true
 ---
 
 # To SSP
 
-Take what the engagement has already decided and write it into the SSP. The SSP is one OSCAL document, `ssp/ssp.json`, and it is the record (ADR-0007). Every statement goes into it by calling the Skill tool with `scribe`; never write `ssp.json` yourself and never edit anything under `view/`. Do not interview the operator; synthesize what is in the conversation, the record, the scope notes, and the ADRs. Where something is genuinely unknown, it goes to the open items list, never into a statement.
+Take what the engagement has already decided and write it into the SSP. The SSP is the `ssp/` folder of Markdown files, and it is the record (ADR-0012). Every statement goes into it by calling the Skill tool with `scribe`; never write the `ssp/` files yourself and never edit anything under `view/`. Do not interview the operator; synthesize what is in the conversation, the record, the scope notes, and the ADRs. Where something is genuinely unknown, it goes to the open items list, never into a statement.
 
-The engagement repo should already be scaffolded. If there is no `ssp/ssp.json`, tell the operator to run `/setup-poamslayer-skills`.
+The engagement repo should already be scaffolded. If there is no `ssp/system.md`, tell the operator to run `/setup-poamslayer-skills`.
 
 ## The unit is the objective and the component
 
@@ -18,7 +18,7 @@ Call the Skill tool with `ssp-statement-writer` for the statement rules. This fl
 
 ## Inputs
 
-- **The record, `ssp/ssp.json`**: the components, assets and their categories, providers, and every statement already recorded. Read it by calling the Skill tool with `scribe` and asking it to show the record for the requirements in hand; that is the current state. Never read `view/`: it is generated for people and can be stale.
+- **The record, `ssp/`**: the components, assets and their categories, and providers in `ssp/components/`, and every statement already recorded in the frontmatter of each requirement file, `ssp/<requirement>.md`, under `objectives`, by letter. Read the files for the requirements in hand directly; that is the current state. An objective whose only entry is `this-system`, planned, "Not yet written." has no statement yet; a component's entry that is planned and "Not yet written." is a cleared statement that component still owes. Never read `view/`: it is generated for people and can be stale.
 - `CONTEXT.md` for the glossary and the seat, and `docs/adr/` for the decisions and their reasoning. Use the glossary's terms; do not drift to synonyms it avoids.
 - `scope/data-flow.md`, `scope/network-diagram.md`, `scope/network-diagram.drawio`, `scope/cui-determinations.md`, and `scope/applicability-matrix.md` where they exist.
 - `scope/open-items.md`, the open items list (ADR-0010).
@@ -27,7 +27,7 @@ Call the Skill tool with `ssp-statement-writer` for the statement rules. This fl
 
 ## Method
 
-1. **Read the engagement first**, in the order above. List the components the record holds. A statement can name only a recorded component, never the "This System" placeholder.
+1. **Read the engagement first**, in the order above. List the components the record holds, by slug. A statement can name only a recorded component, never the `this-system` placeholder.
 
 2. **Work by requirement, in family order.** Within a requirement, work the objectives in letter order. Stop after each family and let the operator read it, because a wrong pattern repeated across 110 requirements is expensive to unpick.
 
@@ -55,13 +55,13 @@ Call the Skill tool with `ssp-statement-writer` for the statement rules. This fl
 
    A claim the engagement contradicts is not implemented, whoever wrote it: an audit report in `.scratch/audit/`, the evidence, or a policy that says otherwise wins over the claim. Applicability is decided by `requirement-applicability-matrix`, not here. Record a not applicable or alternative status only where the matrix or an ADR already gives the reason, and never use one for the other. When one already in the record rests on a reason the engagement's facts contradict, record what is true instead and put the question on the open items list for `requirement-applicability-matrix`.
 
-7. **Correct what is already recorded.** Setting a statement again for the same objective and component replaces it and keeps its identity. When a statement sits on the wrong component, record the right one on the right component, then ask scribe to take the wrong component off the objective (`remove-statement`); clearing would leave it there as planned. Clear a statement only when the component still owes the objective and its statement is not yet written.
+7. **Correct what is already recorded.** Setting a statement again for the same objective and component replaces it. When a statement sits on the wrong component, record the right one on the right component, then ask scribe to remove the wrong component's statement from the objective; clearing would leave it there as planned. Clear a statement only when the component still owes the objective and its statement is not yet written.
 
 8. **Cover 3.12.4 deliberately** on any pass over the whole SSP; when the operator named particular requirements, say whether 3.12.4's statements still hold and leave them to the next whole pass. The SSP itself is a requirement, it is worth 1 point, it can never sit on a POA&M, and its absence stops an assessment outright (32 CFR 170.24(c)(2)(i)(5)). Its objectives ask for the system boundary, the environments of operation in terms of people, technology, and facilities, how the requirements are implemented, and the relationships and connections to other systems. Write those explicitly rather than assuming the rest of the document implies them.
 
 9. **Send everything unverified to the open items list.** If a fact is not confirmed, it does not go in a statement with a caveat attached. It goes on `scope/open-items.md` (create it with a `# Open items` heading if the engagement has none), one line naming the fact, the objective in `3.5.3[a]` form, and who can confirm it (a person, or "for <skill>" when a skill owns the answer), and the objective is recorded planned for that component (ADR-0010). The planned statement says only what is true today, for example "Lockout for local accounts on SAG-NAS is not documented." Text such as "to be confirmed" inside a statement is a lint failure and, at assessment, an admission.
 
-10. **Record the family through scribe.** Show the operator the family as a table first, then call the Skill tool with `scribe` and give it the family's statements as one set. Scribe records a set with one validation, which matters across 320 objectives. Record straight away if the operator asked you not to stop; that skips the pause for the operator between families, never the lint. If scribe refuses, the refusal names the entry: fix that statement and give scribe the set again. Never work around a refusal.
+10. **Record the family through scribe.** Show the operator the family as a table first, then call the Skill tool with `scribe` and give it the family's statements together, each naming its objective in `3.5.3[a]` form, its component by slug, its status, and its remarks. Scribe records them as one change with one check, which matters across 320 objectives. Record straight away if the operator asked you not to stop; that skips the pause for the operator between families, never the lint. If scribe refuses, it quotes the check's line, which names the file and the objective: fix that statement and give scribe the family again. Never work around a refusal.
 
 11. **Run the lint.** When a family is recorded, call the Skill tool with `ssp-lint` on it. Fix what it finds before moving on.
 
@@ -82,7 +82,7 @@ It does not scope. Components, assets, categories, and providers come from the s
 
 ## Output
 
-- The statements, recorded in `ssp/ssp.json` by scribe, each on its objective and component with its status, and remarks where the status needs a reason. Scribe re-renders `view/requirements/<id>.md` for each requirement; point the operator at those pages to read the result.
+- The statements, recorded in the requirement files under `ssp/` by scribe, each on its objective and component with its status, and remarks where the status needs a reason. Scribe re-renders `view/requirements/<id>.md` for each requirement; point the operator at those pages to read the result.
 - New lines on `scope/open-items.md`, which stays Markdown:
 
   ```markdown
@@ -103,7 +103,7 @@ It does not scope. Components, assets, categories, and providers come from the s
 
 ## Sources
 
-- ADR-0007, the record and its one writer: `docs/adr/0007-oscal-ssp-is-the-record-and-scribe-writes-it.md`
+- ADR-0012, the record and its one writer: `docs/adr/0012-markdown-ssp-replaces-oscal.md`
 - ADR-0008, statements attach to objectives: `docs/adr/0008-conformity-statements-attach-to-objectives.md`
 - ADR-0010, open items stay outside the record: `docs/adr/0010-open-items-stay-outside-the-record.md`
 - 32 CFR 170.24(c)(2)(i)(5), the SSP requirement and the effect of its absence: `reference/32-cfr-170-24-scoring.md` (also public at https://www.ecfr.gov/current/title-32/section-170.24)

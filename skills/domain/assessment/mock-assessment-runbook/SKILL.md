@@ -22,7 +22,7 @@ This skill answers: which pre-certification assessment does this organization ne
 
 ## Inputs
 
-- The SSP, which is the record, `ssp/ssp.json`: call the Skill tool with `scribe` and ask it to show the whole record. It gives the statements and their statuses on every objective, the components, the assets with their categories, and the providers. A record whose objectives are all still planned on "This System" with "Not yet written." is an honest statement that no SSP exists yet. Never read `view/` instead; the view is generated for people and can be stale.
+- The SSP, which is the record, the engagement's `ssp/` folder: read the files directly. The frontmatter of each `ssp/<requirement>.md` gives the statements and their statuses on every objective, and `ssp/components/*.md` gives the components, the assets with their categories, and the providers. An objective whose only entry is `this-system`, planned and "Not yet written.", has no statement yet, and a record whose objectives are all like that is an honest statement that no SSP exists yet. A component's entry that is planned and "Not yet written." is a cleared statement that component still owes. Never read `view/` instead; the view is generated for people and can be stale.
 - The network diagram, `scope/network-diagram.drawio` (drawn by `cmmc-boundary-diagram`), beside the assets and categories in the record, to confirm the boundary is actually drawn.
 - Any prior gap assessment, POA&M, or self-assessment score already on file.
 - The assessment date being targeted, if one is set.

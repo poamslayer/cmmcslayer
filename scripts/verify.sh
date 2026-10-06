@@ -37,24 +37,17 @@ run "skill frontmatter and harness metadata" python3 scripts/check_skills.py
 run "control file schema and the requirements index" python3 scripts/check_control_files.py
 run "router links" python3 scripts/check_router_links.py $strict
 run "authorities register" python3 scripts/check_authorities.py
-run "OSCAL catalog text and profile against the requirements reference" python3 scripts/check_oscal_catalog.py
-
-# oscal-cli needs Java, and this check takes about twenty seconds. A missing Java or
-# oscal-cli fails here rather than skipping: install it with
-# scripts/install_oscal_cli.sh. See ADR-0007.
-run "OSCAL validation with oscal-cli" python3 scripts/check_oscal_cli.py
-
-# scribe's edit command, run end to end in a scratch engagement under a
-# temporary folder. Needs oscal-cli too, and takes about fifteen seconds.
-run "scribe edit command" python3 scripts/check_scribe.py
+# scribe's check and renderer, run on scratch engagements under a temporary
+# folder: a valid SSP passes and renders, and each rule fails once. A few seconds.
+run "scribe check and render" python3 scripts/check_scribe.py
 
 # The setup skill's scaffold, run in a scratch folder: it lays out the
-# engagement and has scribe create ssp.json. Needs oscal-cli; about twenty seconds.
+# engagement and writes the Markdown SSP, which must pass scribe's check.
 run "setup scaffold" python3 scripts/check_setup.py
 
-# The fixture engagement's record: oscal-cli on its ssp.json, its assets and
-# statements against the Markdown they were converted from, and proof that
-# the grader rubric's record check fails an invalid SSP. About fifteen seconds.
+# The fixture engagement's record: scribe's check on its SSP, its assets and
+# statements as the answer key states them, a current view, and proof that
+# the grader rubric's record check fails an invalid SSP.
 run "fixture record" python3 scripts/check_fixture_record.py
 
 # The scrub check is last because it is the slowest: it builds an n-gram set

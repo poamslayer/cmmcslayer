@@ -48,7 +48,7 @@ This skill answers: does ITAR or EAR change the answer for this piece of technic
 - Who will touch it: US persons only, or one or more foreign nationals, and their role (SOC analyst, IT admin, visitor, MSP staff).
 - The vendor or service provider's operating model: where its support and security staff sit, and whether it has remote-shell or admin-level access.
 - The cloud region and hosting model in play, if any.
-- If this overlay is being run against an existing scope: the assets and providers in the record, `ssp/ssp.json`, shown by calling the Skill tool with `scribe`, and `scope/external-systems.md`. Never read `view/` instead; it is generated for people and can be stale.
+- If this overlay is being run against an existing scope: the assets and providers in the record, read directly from `ssp/components/*.md`, and `scope/external-systems.md`. Never read `view/` instead; it is generated for people and can be stale.
 
 ## Method
 
@@ -224,7 +224,7 @@ Result: proceed as scoped | remediation required before proceeding.
 Remediation items: ...
 ```
 
-File the memo. When the subject is a service provider, write the finding under that provider's heading in `scope/external-systems.md`, and create the file if it does not exist. This skill does not record anything about the provider in the record, `ssp/ssp.json`, and never edits the responsibility matrix, which is generated from the record under `view/`: where a provider sits in the architecture belongs to `esp-and-msp-scoping`, which records it through scribe.
+File the memo. When the subject is a service provider, write the finding under that provider's heading in `scope/external-systems.md`, and create the file if it does not exist. This skill does not record anything about the provider in the record, the `ssp/` files, and never edits the responsibility matrix, which is generated from the record under `view/`: where a provider sits in the architecture belongs to `esp-and-msp-scoping`, which records it through scribe.
 - Add one line to `scope/open-items.md`: "<provider>: US-person staffing <confirmed in writing | denied | unknown>, per the export memo of YYYY-MM-DD, for `esp-and-msp-scoping` to carry into the provider's remarks."
 - Write the same in the memo's remediation items.
 - If the staffing model is unknown, write "US-person staffing: unknown, not confirmed in writing." Treat the provider as not US-person-only under step 3 until the provider answers in writing.

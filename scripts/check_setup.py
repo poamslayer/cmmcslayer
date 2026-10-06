@@ -3,41 +3,36 @@
 
 Every case runs the script in a scratch folder under a temporary directory,
 never in the repository, and checks only what an operator would see: the files
-it leaves, the SSP's verdict from oscal-cli, and its exit status. Nothing here
-imports the script's internals.
+it leaves, the verdict of scribe's check on the SSP, and its exit status.
+Nothing here imports the script's internals.
 
 1. Setup in an empty folder creates the layout (110 evidence folders,
-   CONTEXT.md with the seat, docs/agents/) and ssp/ssp.json, made by scribe's
-   create: it passes oscal-cli, imports our profile, holds all 110
-   requirements with every objective planned, and the view exists. ssp.json
-   and view/ are the SSP: no Markdown SSP file is written under ssp/, and no
-   asset inventory or responsibility matrix under scope/ (#105).
-2. Re-running setup with --force leaves ssp.json byte for byte unchanged.
-3. Re-running setup without --force refuses and leaves ssp.json unchanged.
-4. Without oscal-cli on PATH, setup still lays out the folders, writes
-   no ssp.json, exits non-zero, and says why. Re-running with --force once
-   oscal-cli is back adds the ssp.json that was missing.
+   CONTEXT.md with the seat, docs/agents/) and the Markdown SSP (ADR-0012):
+   ssp/system.md with the client's name, and one ssp/<requirement>.md for each
+   of the 110 requirements, every one of the 320 objectives planned on
+   this-system. The SSP passes scribe's check and the view is rendered. No
+   ssp.json or OSCAL file is written, and no asset inventory or responsibility
+   matrix under scope/.
+2. Re-running setup with --force leaves the SSP byte for byte unchanged.
+3. Re-running setup without --force refuses and leaves the SSP unchanged.
+4. With no Java on PATH, only Python, setup runs to completion and the SSP
+   passes the check: nothing it needs is missing.
 5. A folder that already holds CONTEXT.md or policies/ is refused without
    --force, and no existing file, a README.md included, is overwritten.
 
     python3 scripts/check_setup.py
-
-Needs Java and oscal-cli, like check_scribe.py.
 """
 
 from __future__ import annotations
 
-import json
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
 SCAFFOLD = Path("skills/setup/setup-poamslayer-skills/scaffold.py").resolve()
-CONSTRAINTS = Path("reference/oscal/cmmc-constraints.xml").resolve()
-PROFILE_HREF = "oscal/nist-800-171r2-profile.json"
+CHECK = Path("skills/flows/scribe/check_ssp.py").resolve()
 CLIENT_WORDS = "the client's own words\n"
 
 
@@ -63,23 +58,20 @@ def run_scaffold(target: Path, *extra: str, env: dict | None = None) -> subproce
     )
 
 
-def oscal_cli_passes(path: Path) -> bool:
-    proc = subprocess.run(
-        ["oscal-cli", "validate", "--no-color", str(path), "-c", str(CONSTRAINTS)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    return proc.returncode == 0
+def check_passes(target: Path) -> subprocess.CompletedProcess:
+    return subprocess.run([sys.executable, str(CHECK), str(target)], capture_output=True, text=True, check=False)
+
+
+def ssp_files(target: Path) -> dict[str, bytes]:
+    return {str(p.relative_to(target)): p.read_bytes() for p in sorted((target / "ssp").rglob("*")) if p.is_file()}
 
 
 def check_layout(failures: list[str], target: Path) -> None:
-    markdown = sorted(p.name for p in (target / "ssp").glob("*.md"))
-    if markdown:
-        failures.append(f"{target}: Markdown SSP files under ssp/ ({', '.join(markdown[:3])}); ssp.json is the SSP")
+    for found in sorted(target.rglob("*.json")) + sorted(target.rglob("oscal")):
+        failures.append(f"{found}: setup wrote an OSCAL file; the SSP is Markdown (ADR-0012)")
     for name in ("asset-inventory.md", "esp-responsibility-matrix.md"):
         if (target / "scope" / name).exists():
-            failures.append(f"{target}: scope/{name} was written; it is a view page generated from ssp.json")
+            failures.append(f"{target}: scope/{name} was written; it is a view page generated from the SSP")
     evidence = [p for p in (target / "evidence").glob("3.*") if p.is_dir()]
     if len(evidence) != 110:
         failures.append(f"{target}: {len(evidence)} evidence folders; expected 110")
@@ -92,29 +84,23 @@ def check_layout(failures: list[str], target: Path) -> None:
 
 
 def check_ssp(failures: list[str], target: Path) -> None:
-    ssp = target / "ssp" / "ssp.json"
-    if not ssp.is_file():
-        failures.append(f"{ssp}: setup did not create it")
+    ssp = target / "ssp"
+    system = ssp / "system.md"
+    if not system.is_file():
+        failures.append(f"{system}: setup did not create it")
         return
-    if not oscal_cli_passes(ssp):
-        failures.append(f"{ssp}: does not pass oscal-cli")
-    plan = json.loads(ssp.read_text(encoding="utf-8"))["system-security-plan"]
-    if plan.get("import-profile", {}).get("href") != PROFILE_HREF:
-        failures.append(f"{ssp}: imports {plan.get('import-profile')}; expected {PROFILE_HREF}")
-    if plan["system-characteristics"]["system-name"] != "Scratch Machining":
-        failures.append(f"{ssp}: system name is not the client name")
-    requirements = plan["control-implementation"]["implemented-requirements"]
-    statements = [s for r in requirements for s in r.get("statements", [])]
-    states = {b["implementation-status"]["state"] for s in statements for b in s["by-components"]}
-    if len(requirements) != 110 or len(statements) != 320 or states != {"planned"}:
-        failures.append(
-            f"{ssp}: {len(requirements)} requirements, {len(statements)} objectives, "
-            f"states {sorted(states)}; expected 110, 320, planned"
-        )
-    for name in ("nist-800-171r2-profile.json", "nist-800-171r2-catalog.json"):
-        if not (target / "ssp" / "oscal" / name).is_file():
-            failures.append(f"{target}: ssp/oscal/{name} was not copied")
-    for page in ("view/asset-inventory.md", "view/requirements/3.5.3.md"):
+    if "system-name: Scratch Machining\n" not in system.read_text(encoding="utf-8"):
+        failures.append(f"{system}: the system name is not the client name")
+    files = sorted(ssp.glob("3.*.md"))
+    text = "".join(f.read_text(encoding="utf-8") for f in files)
+    placeholders = text.count("    - component: this-system\n      status: planned\n      statement: Not yet written.\n")
+    if len(files) != 110 or placeholders != 320 or text.count("- component:") != 320:
+        failures.append(f"{ssp}: {len(files)} requirement files and {placeholders} placeholders; "
+                        "expected 110 files and all 320 objectives planned on this-system")
+    proc = check_passes(target)
+    if proc.returncode != 0:
+        failures.append(f"{ssp}: fails scribe's check:\n{proc.stdout}")
+    for page in ("view/asset-inventory.md", "view/esp-responsibility-matrix.md", "view/requirements/3.5.3.md"):
         if not (target / page).is_file():
             failures.append(f"{target}: {page} was not rendered")
 
@@ -129,39 +115,32 @@ def check(failures: list[str], base: Path) -> None:
         return
     check_layout(failures, fresh)
     check_ssp(failures, fresh)
-    ssp = fresh / "ssp" / "ssp.json"
-    if not ssp.is_file():
-        return
-    before = ssp.read_bytes()
+    before = ssp_files(fresh)
 
-    # 2. --force never touches an existing ssp.json
+    # 2. --force never touches an existing SSP
     proc = run_scaffold(fresh, "--force")
     if proc.returncode != 0:
         failures.append(f"{SCAFFOLD} --force: exited {proc.returncode}: {proc.stderr.strip()}")
-    if ssp.read_bytes() != before:
-        failures.append(f"{ssp}: changed by a re-run with --force")
+    if ssp_files(fresh) != before:
+        failures.append(f"{fresh / 'ssp'}: changed by a re-run with --force")
 
     # 3. without --force a scaffolded repo is refused
     proc = run_scaffold(fresh)
-    if proc.returncode == 0 or ssp.read_bytes() != before:
+    if proc.returncode == 0 or ssp_files(fresh) != before:
         failures.append(f"{SCAFFOLD}: re-ran over a scaffolded repo without --force")
 
-    # 4. no oscal-cli: the layout lands, the SSP does not, and --force adds it later
+    # 4. Python alone, no Java: setup still does everything
     bare = base / "bare"
     bare.mkdir()
     python_only = base / "bin"
     python_only.mkdir()
     (python_only / "python3").symlink_to(sys.executable)
     env = {**os.environ, "PATH": str(python_only)}
+    env.pop("JAVA_HOME", None)
     proc = run_scaffold(bare, env=env)
-    if proc.returncode == 0 or "oscal-cli" not in proc.stderr:
-        failures.append(f"{SCAFFOLD}: did not report the missing oscal-cli: {proc.stderr.strip()}")
-    if (bare / "ssp" / "ssp.json").exists():
-        failures.append(f"{bare}: wrote ssp.json without oscal-cli")
-    check_layout(failures, bare)
-    proc = run_scaffold(bare, "--force")
     if proc.returncode != 0:
-        failures.append(f"{SCAFFOLD} --force: did not add the missing ssp.json: {proc.stderr.strip()}")
+        failures.append(f"{SCAFFOLD}: failed with no Java on PATH: {proc.stderr.strip()}")
+    check_layout(failures, bare)
     check_ssp(failures, bare)
 
     # 5. a repo that already holds the client's work is refused, and nothing is overwritten
@@ -184,11 +163,8 @@ def check(failures: list[str], base: Path) -> None:
 
 def main() -> int:
     failures: list[str] = []
-    if shutil.which("oscal-cli") is None:
-        failures.append("oscal-cli not found on PATH; install it with: bash scripts/install_oscal_cli.sh")
-    else:
-        with tempfile.TemporaryDirectory() as tmp:
-            check(failures, Path(tmp))
+    with tempfile.TemporaryDirectory() as tmp:
+        check(failures, Path(tmp))
     for failure in failures:
         print(f"FAIL {failure}")
     print(f"setup: scaffold checked in a scratch folder, {len(failures)} failures")

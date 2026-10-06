@@ -1,5 +1,5 @@
 # ADR-0008: Conformity statements attach to objectives, not only to requirements
 
-Date: 2026-09-28. Status: accepted. Issue #65. Builds on ADR-0007.
+Date: 2026-09-28. Status: accepted. Issue #65. Builds on ADR-0007. Carried into the Markdown record by ADR-0012: the statement attaches to the objective as a frontmatter key, and the OSCAL `statement-id` detail below no longer applies.
 
 Assessors score objectives, and the repo has always written one conformity statement per objective. In `ssp.json` each statement is a `by-component` entry under a `statement` whose `statement-id` is the objective part of the catalog, for example `_03.05.03_obj.a` for 3.5.3[a], rather than the requirement's statement part (`_03.05.03_smt`). The OSCAL schema accepts this, but OSCAL's documentation describes `statement-id` as a reference to a control statement, so a reader who knows OSCAL will expect the other shape. We chose objectives because recording which objective a sentence covers inside free text, or in a custom field, would make objective-level scoring a convention instead of structure. If a tool we must feed later insists on statement parts, the mapping from objective to requirement is mechanical, since every Rev 2 requirement has exactly one statement part.

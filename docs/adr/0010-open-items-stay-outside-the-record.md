@@ -1,6 +1,6 @@
 # ADR-0010: Open items stay Markdown, outside the record
 
-Date: 2026-09-29. Status: accepted. Issue #103, settling the question spec #94 left open. Builds on ADR-0007 and ADR-0008.
+Date: 2026-09-29. Status: accepted. Issue #103, settling the question spec #94 left open. Builds on ADR-0007 and ADR-0008. Carried into the Markdown record by ADR-0012: open items stay outside the `ssp/` files.
 
 ## Context
 

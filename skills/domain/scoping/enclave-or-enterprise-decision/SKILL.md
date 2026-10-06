@@ -31,7 +31,7 @@ This skill answers: which architecture should carry the CMMC Level 2 scope, and 
 - The interview notes per role from onboarding, especially who touches CUI and who does not.
 - The contract list with clauses, and the pipeline: what contracts the organization expects to bid in the next three years, and what data they will bring.
 - The export-control answer (ITAR or EAR now or expected), because it decides the tenant question and shapes physical controls.
-- The current environment as the record, `ssp/ssp.json`, holds it, if scoping has started: identity backbone, tenant type, VDI, network layout, shop floor systems, SaaS list, as components, assets, and providers. Call the Skill tool with `scribe` and ask it to show the record. Never read `view/` instead; it is generated for people and can be stale.
+- The current environment as the record, the engagement's `ssp/` folder, holds it, if scoping has started: identity backbone, tenant type, VDI, network layout, shop floor systems, SaaS list, as components, assets, and providers in `ssp/components/*.md`. Read the files directly. Never read `view/` instead; it is generated for people and can be stale.
 - The seat, from `CONTEXT.md`.
 
 ## Method

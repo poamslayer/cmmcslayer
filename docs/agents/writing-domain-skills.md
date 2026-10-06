@@ -27,7 +27,7 @@ Add `as_of: YYYY-MM-DD` when the content is perishable (regulatory status) and `
 Body, in this order, each as a `##` heading:
 
 1. A one-paragraph statement of what question the skill answers and what it refuses to do.
-2. **Inputs**: what the operator or the calling flow must supply (a document, an asset description, a proposed change). Name the engagement repo files it reads (`scope/data-flow.md`, `scope/open-items.md`, `CONTEXT.md`). The SSP, `ssp/ssp.json`, is read by calling the Skill tool with `scribe` and asking it to show the record, and written only through scribe; never name `view/` as an input.
+2. **Inputs**: what the operator or the calling flow must supply (a document, an asset description, a proposed change). Name the engagement repo files it reads (`scope/data-flow.md`, `scope/open-items.md`, `CONTEXT.md`). The SSP, the `ssp/` folder, is read directly: components and their assets from `ssp/components/*.md`, statements from the frontmatter of `ssp/<requirement>.md`. It is written only through scribe, which takes components by slug and assets by asset id; never name `view/` as an input.
 3. **Method**: the rules, tests, and decision tables, as numbered steps. Each step says what to check, what the outcome means, and what to write down. This is where the vault's judgment lives, restated as rules.
 4. **Output**: the exact shape of what the skill produces, as a Markdown template in a fenced block, and where it goes in the engagement repo (a file path, an ADR, a `CONTEXT.md` entry, a GitHub issue).
 5. **Where practitioners disagree**: each contested point, both positions, and the sentence "the outcome depends on the assessor". Omit the section if nothing is contested.

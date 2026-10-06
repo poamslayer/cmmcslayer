@@ -20,7 +20,7 @@ This skill maps where CUI enters, where it is generated, where it exits, and whe
 - Every interview file under `scope/interviews/`, one per business role, written by the `to-questionnaire` skill during the engagement's interview step. Read all of them before drawing anything; a map built from a partial set of interviews will miss a flow.
 - A record that FCI/CUI training happened before the interviews were conducted, since interviews run before training produce inflated, unreliable answers.
 - `CONTEXT.md` for the client's vocabulary and any CUI determinations already on record.
-- Any assets already in the record, `ssp/ssp.json`, read only to check for disagreement with the flows this skill maps, never as the starting point. Call the Skill tool with `scribe` and ask it to show the record. Never read `view/` instead; it is generated for people and can be stale.
+- Any assets already in the record, listed under `assets` in the engagement's `ssp/components/*.md` files, read only to check for disagreement with the flows this skill maps, never as the starting point. Read the files directly. Never read `view/` instead; it is generated for people and can be stale.
 
 ## Method
 

@@ -26,7 +26,7 @@ This skill answers one question: can the passage someone just cited actually be 
 
 - The exact passage being cited: a Practice Statement, an Assessment Objective, a line from Potential Assessment Methods and Objects, Discussion, Further Discussion, an Example, or a Potential Assessment Consideration (PAC).
 - The requirement id the passage sits under (`3.x.y`).
-- Optionally, the requirement's conformity statements in the record, `ssp/ssp.json`, if you are checking whether one over-claims by citing Discussion text instead of an objective. Call the Skill tool with `scribe` and ask it to show the record for the requirement. Never read `view/` instead; it is generated for people and can be stale.
+- Optionally, the requirement's conformity statements in the record, the frontmatter of `ssp/<requirement>.md`, if you are checking whether one over-claims by citing Discussion text instead of an objective. Read the file directly. Never read `view/` instead; it is generated for people and can be stale.
 
 ## Method
 

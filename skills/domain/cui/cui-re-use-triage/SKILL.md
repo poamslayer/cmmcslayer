@@ -39,7 +39,7 @@ So the question for every created document is **what content does it carry**, no
 - What the company creates from them, one line per document type, and who creates it.
 - The end item or service being delivered, and any military or space application.
 - Whether the company owns the design or works to a design the customer supplied.
-- The engagement repo files: `CONTEXT.md`, `scope/cui-determinations.md`, and any prior `scope/cui-re-use-triage.md` for this client; and the assets in the record, `ssp/ssp.json`, shown by calling the Skill tool with `scribe`. Never read `view/` instead; it is generated for people and can be stale.
+- The engagement repo files: `CONTEXT.md`, `scope/cui-determinations.md`, and any prior `scope/cui-re-use-triage.md` for this client; and the assets in the record, listed under `assets` in `ssp/components/*.md`, read directly. Never read `view/` instead; it is generated for people and can be stale.
 
 ## Method
 

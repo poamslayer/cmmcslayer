@@ -17,7 +17,7 @@ The flagship of the domain layer. For any of the 110 requirements it answers one
 ## Inputs
 
 - A requirement id (`3.1.1`) or a family (`AC`) or a question that names one ("will an Entra user export pass 3.1.1?").
-- Optionally, the engagement's current state, so the answer can be applied rather than generic: the folder `evidence/3.x.y/`, and the record, `ssp/ssp.json`, for the requirement's statements and the components and assets they describe. Call the Skill tool with `scribe` and ask it to show the record for the requirement. Never read `view/` instead; it is generated for people and can be stale.
+- Optionally, the engagement's current state, so the answer can be applied rather than generic: the folder `evidence/3.x.y/`, and the record, for the requirement's statements in the frontmatter of `ssp/<requirement>.md` and the components and assets they describe in `ssp/components/*.md`. Read the files directly. Never read `view/` instead; it is generated for people and can be stale.
 
 ## Method
 

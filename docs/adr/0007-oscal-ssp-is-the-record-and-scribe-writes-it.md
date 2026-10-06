@@ -1,6 +1,6 @@
 # ADR-0007: The OSCAL SSP is the record, and only `scribe` writes it
 
-Date: 2026-09-28. Status: accepted. Issue #65. Research in `docs/research/oscal-*.md`.
+Date: 2026-09-28. Status: superseded by ADR-0012, which keeps the model and the single writer and replaces OSCAL with Markdown and YAML frontmatter. Issue #65. Research in `docs/research/oscal-*.md`.
 
 ## Context
 
