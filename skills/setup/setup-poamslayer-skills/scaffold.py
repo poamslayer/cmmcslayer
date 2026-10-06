@@ -225,39 +225,56 @@ def configure_labels(target: Path, tracker: str, is_github_clone: bool, dry_run:
     return len(LABELS)
 
 
-def scribe_path() -> Path:
-    """Return scribe's edit command, which is the only thing that writes ssp.json."""
-    return Path(__file__).resolve().parents[3] / "skills" / "flows" / "scribe" / "ssp_edit.py"
+def scribe_dir() -> Path:
+    """Scribe's folder, which holds the record's writer, its check, and its renderer."""
+    return Path(__file__).resolve().parents[3] / "skills" / "flows" / "scribe"
 
 
-def create_ssp(target: Path, client: str) -> str:
-    """Have scribe create ssp/ssp.json unless one exists. Return what happened."""
-    if (target / "ssp" / "ssp.json").exists():
-        print("skipped: ssp/ssp.json")
-        return "kept"
-    edit = scribe_path()
-    if not edit.is_file():
-        print(f"ERROR: scribe not found at {edit}; ssp/ssp.json was not created.", file=sys.stderr)
-        return "not created"
-    result = subprocess.run(
-        [sys.executable, str(edit), "--engagement", str(target), "create", "--system-name", client],
+def run_scribe(command: str, target: Path, requirements_file: Path) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(scribe_dir() / command), str(target), "--requirements", str(requirements_file)],
         check=False,
         capture_output=True,
         text=True,
     )
-    if result.returncode == 0:
-        return "created"
-    detail = (result.stderr or result.stdout).strip() or f"scribe exited with status {result.returncode}"
-    if (target / "ssp" / "ssp.json").exists():
-        print(f"WARNING: ssp/ssp.json was created, but:\n{detail}", file=sys.stderr)
-        return "created"
-    print(
-        f"ERROR: ssp/ssp.json was not created.\n{detail}\n"
-        "The rest of the layout was written. Fix the cause and re-run with --force "
-        "to add ssp.json.",
-        file=sys.stderr,
-    )
-    return "not created"
+
+
+def create_ssp(target: Path, client: str, requirements: list[dict[str, Any]], requirements_file: Path) -> str:
+    """Write the Markdown SSP unless one exists, then check it and render the view. Return what happened.
+
+    The SSP is ssp/system.md and one ssp/<requirement>.md per requirement, every
+    objective planned on the placeholder, this-system (ADR-0012). An existing
+    SSP file is never touched; a missing one is added.
+    """
+    if not (scribe_dir() / "ssp_record.py").is_file():
+        print(f"ERROR: scribe not found at {scribe_dir()}; the SSP was not created.", file=sys.stderr)
+        return "not created"
+    sys.path.insert(0, str(scribe_dir()))
+    import ssp_record  # noqa: E402  (scribe's writer, so setup and scribe write the same shape)
+
+    ssp = target / "ssp"
+    (ssp / "components").mkdir(parents=True, exist_ok=True)
+    pending = {ssp / "system.md": ssp_record.blank_system(client)}
+    pending.update({ssp / f"{r['id']}.md": ssp_record.blank_requirement(r) for r in requirements})
+    written = 0
+    for path, text in pending.items():
+        if path.exists():
+            continue
+        path.write_text(text, encoding="utf-8")
+        written += 1
+    outcome = "created" if written == len(pending) else "kept" if written == 0 else f"{written} missing files added"
+    if written == 0:
+        print("skipped: ssp/ (the SSP exists)")
+
+    check = run_scribe("check_ssp.py", target, requirements_file)
+    if check.returncode != 0:
+        print(f"ERROR: the SSP fails scribe's check:\n{check.stdout.strip()}{check.stderr.strip()}", file=sys.stderr)
+        return "fails the check"
+    if written or not (target / "view").is_dir():
+        render = run_scribe("render_view.py", target, requirements_file)
+        if render.returncode != 0:
+            print(f"WARNING: the view was not rendered:\n{render.stdout.strip()}{render.stderr.strip()}", file=sys.stderr)
+    return outcome
 
 
 def run_status_check(script_dir: Path) -> str:
@@ -292,8 +309,9 @@ def scaffold(args: argparse.Namespace) -> int:
         )
         return 1
 
+    requirements_file = requirements_path(args.requirements)
     try:
-        requirements = load_requirements(requirements_path(args.requirements))
+        requirements = load_requirements(requirements_file)
     except ValueError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
@@ -377,7 +395,7 @@ def scaffold(args: argparse.Namespace) -> int:
         print(f"ERROR: could not write scaffold: {error}", file=sys.stderr)
         return 1
 
-    ssp_outcome = create_ssp(target, args.client)
+    ssp_outcome = create_ssp(target, args.client, requirements, requirements_file)
     labels_created_or_printed = configure_labels(
         target, tracker, is_github_clone, args.dry_run
     )
@@ -388,9 +406,9 @@ def scaffold(args: argparse.Namespace) -> int:
     print(f"folders created: {folders_created}")
     print(f"labels created or printed: {labels_created_or_printed}")
     print(f"seat recorded: {args.seat}")
-    print(f"ssp/ssp.json: {ssp_outcome}")
+    print(f"ssp/: {ssp_outcome}")
     print(status_output)
-    return 1 if ssp_outcome == "not created" else 0
+    return 1 if ssp_outcome in ("not created", "fails the check") else 0
 
 
 def main(argv: Sequence[str] | None = None) -> int:

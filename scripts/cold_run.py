@@ -28,7 +28,7 @@ SCRIBE = SKILLS / "flows" / "scribe"
 
 
 def records_through_scribe(skill: str) -> bool:
-    """True when the skill under test calls scribe, so the tester needs scribe to write or show the record."""
+    """True when the skill under test calls scribe, so the tester needs scribe to write the record."""
     if skill == "scribe":
         return False
     return any(
@@ -86,7 +86,7 @@ def main() -> int:
     print(f"  {target}  (the engagement, writable)")
     print(f"  {COMPANY}  (the company, read only)")
     if needs_scribe:
-        print(f"  {SCRIBE}  (scribe's SKILL.md and edit command: the skill records or reads the SSP through it)")
+        print(f"  {SCRIBE}  (scribe's SKILL.md, check, and renderer: the skill records the SSP through it)")
     print()
     print("The tester must NOT read:")
     print(f"  {FIXTURE / 'known-answers.md'}")

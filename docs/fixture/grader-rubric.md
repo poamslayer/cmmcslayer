@@ -2,7 +2,7 @@
 
 Every cold run against this fixture is graded on five checks. Each is scored 0, 1, or 2. The total is out of 10. A run passes at 8 or above, with no check scored 0.
 
-Checks 4 and 5 grade the record, `ssp/ssp.json`, which every run leaves whether or not the skill under test writes to it. An SSP that fails oscal-cli scores 0 on check 4, so an invalid record fails the run however good the rest of it is.
+Checks 4 and 5 grade the record, the SSP under `ssp/`, which every run leaves whether or not the skill under test writes to it. An SSP that fails scribe's check scores 0 on check 4, so an invalid record fails the run however good the rest of it is.
 
 ## 1. Shape match
 
@@ -42,12 +42,12 @@ Run:
 python3 scripts/check_record.py <scratch copy>
 ```
 
-It runs oscal-cli on `ssp/ssp.json` with our constraints file, `reference/oscal/cmmc-constraints.xml`.
+It runs scribe's check, `skills/flows/scribe/check_ssp.py`, on the SSP under `ssp/`.
 
 - 2: the record passes.
-- 0: the record is missing, is not JSON, or fails oscal-cli. There is no 1: an SSP is valid or it is not.
+- 0: the record is missing or fails the check. There is no 1: an SSP is valid or it is not.
 
-A run that edited `ssp.json` by hand, or edited anything under `view/`, scores 0 here too, even if the result validates. The record has one writer, scribe (ADR-0007); `git -C <scratch copy> log -p` shows who wrote what.
+A run that edited the SSP without scribe, or edited anything under `view/`, scores 0 here too, even if the result passes the check. The record has one writer, scribe (ADR-0012), and scribe commits each change it records with a message starting `scribe:`; `git -C <scratch copy> log -p` shows who wrote what.
 
 ## 5. Record match
 
@@ -69,7 +69,7 @@ The same caution as check 2 applies: a record that departs from the key with bet
 
 a. Copy `docs/fixture/engagement/` to a scratch directory and run `git init` there. Never modify the fixture repository in place.
 
-b. Give a fresh subagent only: the SKILL.md under test, plus any files that SKILL.md itself points to inside its own folder; scribe's folder, when the skill under test records or reads the SSP through scribe, because it cannot write or show the record otherwise; the scratch copy of the engagement repo; the company files under `docs/fixture/company/`; and the exact prompt an operator would type. The subagent gets nothing else. `python3 scripts/cold_run.py --skill <name>` prints this list.
+b. Give a fresh subagent only: the SKILL.md under test, plus any files that SKILL.md itself points to inside its own folder; scribe's folder, when the skill under test records or reads the SSP through scribe, because it cannot write the record otherwise; the scratch copy of the engagement repo; the company files under `docs/fixture/company/`; and the exact prompt an operator would type. The subagent gets nothing else. `python3 scripts/cold_run.py --skill <name>` prints this list.
 
 c. The subagent writes its output into the scratch copy.
 

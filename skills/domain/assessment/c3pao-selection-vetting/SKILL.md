@@ -26,7 +26,7 @@ This skill answers: is this assessor, or this consultant, actually qualified, an
 ## Inputs
 
 - The candidate firm's name, credential type (C3PAO, Registered Practitioner Organization, or unregistered consultant), and how the engagement found them.
-- The scoping decisions in the record, `ssp/ssp.json`: the components, the assets with their categories, and the providers, so the pre-engagement questions can be asked about this environment specifically. Call the Skill tool with `scribe` and ask it to show the record. Never read `view/` instead; it is generated for people and can be stale.
+- The scoping decisions in the record, the engagement's `ssp/` folder: the components, the assets with their categories, and the providers, so the pre-engagement questions can be asked about this environment specifically. Read them from `ssp/components/*.md`, one file per component with its assets and, for a provider, its role and FedRAMP status. Never read `view/` instead; it is generated for people and can be stale.
 - Whether a provider swap is being considered alongside this selection; if an existing MSP or MSSP would be replaced, that swap has its own significant-change question, separate from this one.
 
 ## Method

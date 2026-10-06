@@ -1,6 +1,6 @@
 # ADR-0009: Adopt a pinned, patched, unofficial OSCAL catalog for 800-171 Rev 2
 
-Date: 2026-09-28. Status: accepted. Issue #65. Evidence in `docs/research/oscal-800-171-catalogs.md` and `docs/research/oscal-rev2-catalog-candidates.md`.
+Date: 2026-09-28. Status: superseded by ADR-0012, which removes the OSCAL catalog. Issue #65. Evidence in `docs/research/oscal-800-171-catalogs.md` and `docs/research/oscal-rev2-catalog-candidates.md`.
 
 ## Context
 

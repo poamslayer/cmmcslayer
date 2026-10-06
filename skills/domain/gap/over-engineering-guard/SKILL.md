@@ -37,7 +37,7 @@ This skill answers one question about a proposed control: is it required, is it 
 
 - The proposed control: what it is, what it costs, and which requirement it is being sold against.
 - The requirement id it targets (`3.x.y`) and, if available, the applicability matrix row from `scope/applicability-matrix.md` showing whether the component is even in scope for that requirement.
-- Optionally, the requirement's conformity statements in the record, `ssp/ssp.json`, if the proposal is already written into one. Call the Skill tool with `scribe` and ask it to show the record for the requirement. Never read `view/` instead; it is generated for people and can be stale.
+- Optionally, the requirement's conformity statements in the record, the frontmatter of `ssp/<requirement>.md`, if the proposal is already written into one. Read the file directly. Never read `view/` instead; it is generated for people and can be stale.
 
 **When a proposal cites no requirement at all, that is the finding.** It arrives often: a provider proposes a tool because it is good practice, or because they deploy it everywhere, and nobody has said which objective it answers. Do not guess the requirement on the vendor's behalf and then grade the guess. Return **no requirement cited**, say that the proposal cannot be judged against a bar nobody has named, and put one question back to whoever proposed it: which assessment objective does this satisfy? A proposal that cannot answer that is discretionary by definition, whatever its other merits, and it gets budgeted as discretionary rather than as compliance work.
 

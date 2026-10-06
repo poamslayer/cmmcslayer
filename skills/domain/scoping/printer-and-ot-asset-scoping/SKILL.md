@@ -28,7 +28,7 @@ This skill categorizes the two hardest classes of physical asset in a manufactur
 - Every printer, plotter, label printer, and multifunction device (MFP) in the environment, with its network connection type.
 - Every CNC controller, coordinate measuring machine (CMM), and programmable logic controller (PLC) on the shop floor.
 - The print path from the endpoint that sends the job, through any print server, to the device.
-- The engagement's record, `ssp/ssp.json`: the printers and shop-floor devices already recorded, their components, and their categories, so a device is added consistently and a wrong category left by earlier work is found and corrected. Read it by calling the Skill tool with `scribe` and asking it to show the record; that is the current state. Never read `view/asset-inventory.md`; it is generated for people. The walk, the company's own documents, and the record are the sources.
+- The engagement's record, `ssp/components/*.md`: the printers and shop-floor devices already recorded, their components, and their categories, so a device is added consistently and a wrong category left by earlier work is found and corrected. Read the files directly; they are the current state. Never read `view/asset-inventory.md`; it is generated for people. The walk, the company's own documents, and the record are the sources.
 - `scope/cui-determinations.md`, for which documents are CUI. Whether a device prints, scans, or stores CUI takes that status from the determinations; never infer it yourself from what a file was made from. When an item has no determination, do not decide it here. Place the device on facts that do not depend on it, and put the question on `scope/open-items.md` for `cui-determination-workflow`.
 - `scope/network-diagram.drawio` and `scope/network-diagram.md`, and `docs/adr/` for recording the forced printer choice.
 - Whether the client is planning a NIST SP 800-171 Revision 3 transition timeline, for the FIPS flag in step 5.
@@ -60,13 +60,13 @@ This skill categorizes the two hardest classes of physical asset in a manufactur
 
 ## Output
 
-Record every device in the SSP by calling the Skill tool with `scribe`, one decision per call. Never write `ssp/ssp.json` yourself, and never edit anything under `view/`: the record is the inventory, and scribe renders `view/asset-inventory.md` from it for people. Point the operator at that view when they want to read it.
+Record every device in the SSP by calling the Skill tool with `scribe`, one decision per call. Never write the `ssp/` files yourself, and never edit anything under `view/`: the record is the inventory, and scribe renders `view/asset-inventory.md` from it for people. Point the operator at that view when they want to read it.
 
 Tell scribe, in these terms:
 
-1. **The component**, if it is not already recorded: the class of device ("Front office MFP", "Haas CNC mills", "Coordinate measuring machine"), what kind of thing it is (usually a class of hardware), and one line describing it. Give the component a category only when every asset behind it shares that category.
-2. **The asset**: its name (hostname, asset tag, or a plain name such as "CMM measuring head"), its component, its category, a short description carrying the model and the verified attributes from step 4, and remarks carrying the reason. A printer's remarks name the three positions from step 1 and the one chosen, or say the choice is on the open items list. A Specialized Asset also gets its kind: OT, test equipment, IoT, industrial IoT, government-furnished equipment, or restricted information system. An Out-of-Scope Asset must carry its justification in the remarks, naming the technical barrier and the `logical-separation-test` verdict that makes Process/Store/Transmit impossible.
-3. **A correction**, when the record already holds a device in a category your method rejects: the new category, and remarks saying why the old one was wrong. Correct it in place; do not remove and re-add it, so its identity survives.
+1. **The component**: its slug when it is already recorded, or, if it is not, the class of device ("Front office MFP", "Haas CNC mills", "Coordinate measuring machine"), what kind of thing it is (usually a class of hardware), and one line describing it. Give the component a category only when every asset behind it shares that category.
+2. **The asset**: its asset id (hostname, asset tag, or a plain name such as "CMM measuring head"), its component, its category, a short description carrying the model and the verified attributes from step 4, and remarks carrying the reason. A printer's remarks name the three positions from step 1 and the one chosen, or say the choice is on the open items list. A Specialized Asset also gets its kind: OT, test equipment, IoT, industrial IoT, government-furnished equipment, or restricted information system. An Out-of-Scope Asset must carry its justification in its `justification` field, naming the technical barrier and the `logical-separation-test` verdict that makes Process/Store/Transmit impossible.
+3. **A correction**, when the record already holds a device in a category your method rejects: the new category, and remarks saying why the old one was wrong. Correct it in place, naming the asset by its id; do not remove and re-add it.
 4. **A split**, when the devices behind one component fall in different categories, such as a CMM measuring head that is a Specialized Asset and the PC beside it that is a CUI Asset: which assets move to a new component, its title, and, when they share one, its category.
 
 Record only printers, multifunction devices, print servers, and shop-floor equipment, with a PC that is part of a machine. A workstation, server, or other asset you notice on the way is not yours to recategorize, even when its recorded category looks wrong: tell the operator which ones and hand them to `cmmc-scope-boundary`, or to `endpoint-and-vdi-scoping` for a general-purpose PC. A copier vendor's remote-servicing path is a provider question for `esp-and-msp-scoping`; name it in the device's remarks.
@@ -74,12 +74,12 @@ Record only printers, multifunction devices, print servers, and shop-floor equip
 Before calling scribe, write the decisions as a table and show it to the operator. Record them once the operator confirms, or straight away if the operator asked you to record without stopping. Scribe gets one row per call:
 
 ```markdown
-| Asset | Component | Category | Kind (Specialized Asset only) | Attributes (the description) | Reason (the remarks) |
+| Asset | Component | Category | Kind (Specialized Asset only) | Attributes (the description) | Reason (the remarks, or the justification of an Out-of-Scope Asset) |
 |---|---|---|---|---|---|
-| <hostname, tag, or plain name> | <component title> | CUI Asset / Security Protection Asset / Contractor Risk Managed Asset / Specialized Asset / Out-of-Scope Asset | <OT / test equipment / IoT / industrial IoT / GFE / restricted information system> | <model, storage, scan destinations, OS and support status, network or air gap, program transfer> | <the P/S/T finding; for a printer, the three positions and the one chosen> |
+| <asset id: hostname, tag, or plain name> | <component slug> | CUI Asset / Security Protection Asset / Contractor Risk Managed Asset / Specialized Asset / Out-of-Scope Asset | <OT / test equipment / IoT / industrial IoT / GFE / restricted information system> | <model, storage, scan destinations, OS and support status, network or air gap, program transfer> | <the P/S/T finding; for a printer, the three positions and the one chosen> |
 ```
 
-If scribe refuses a change, the refusal is the answer: read its reason, fix the decision, and ask again. Never work around it. Give an asset a name without commas, because a split names the assets it moves as a comma-separated list; change the assets' categories before giving their component one; and split a component before giving either half a category.
+If scribe refuses a change, the refusal is the answer: quote scribe's check line, fix the decision, and ask again. Never work around it. An asset id is unique across the whole SSP, and an asset's category must agree with its component's, so a component whose devices now span categories loses its category or is split.
 
 Write the forced printer choice as an ADR once the client has made it. The ADR holds the reasoning; the record holds the category.
 

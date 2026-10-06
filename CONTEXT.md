@@ -67,15 +67,15 @@ IoT, IIoT, operational technology, government furnished equipment, restricted in
 An asset that cannot process, store, or transmit CUI, provides no security protection, and is physically or logically separated. The bar is "cannot", a technical inability, never a policy. Not assessed; the justification must be ready.
 
 **Asset**:
-One inventory item in the SSP, `ssp.json`: a real laptop, server, service tenant, or device. The asset carries the CMMC category (one of the five above), and, for a Specialized Asset, its kind. People read the assets in the generated view page `view/asset-inventory.md`.
+One inventory item in the SSP, listed in the file of the component it is an instance of: a real laptop, server, service tenant, or device. The asset carries the CMMC category (one of the five above), and, for a Specialized Asset, its kind. People read the assets in the generated view page `view/asset-inventory.md`.
 _Avoid_: "system" for a single asset.
 
 **Component**:
-A named part of the system that conformity statements describe once: "Entra ID", "Windows 11 laptops (engineering)", "Access Control Policy". Several assets can be instances of one component. A component carries a category only as a shorthand when every asset behind it shares that category; when they do not, the component is split.
+A named part of the system that conformity statements describe once: "Entra ID", "Windows 11 laptops (engineering)", "Access Control Policy". Several assets can be instances of one component. A component carries a category only as a shorthand when every asset behind it shares that category; when they do not, the component is split. A component is known by its slug, the name of its file in the SSP, and a conformity statement names the component by that slug.
 _Avoid_: using "asset" and "component" interchangeably.
 
 **Scope**:
-The CMMC Assessment Scope: the set of assets and the categories assigned to them, recorded in `ssp.json` and drawn in the network diagram, `scope/network-diagram.drawio`.
+The CMMC Assessment Scope: the set of assets and the categories assigned to them, recorded in the SSP and drawn in the network diagram, `scope/network-diagram.drawio`.
 _Avoid_: boundary as a synonym for the whole scope (the SSP's "system boundary" is one part of it).
 
 **Applicability**:
@@ -88,18 +88,18 @@ External Service Provider, as defined in 32 CFR 170.4: an outside organization t
 Cloud Service Provider, a type of ESP that offers cloud services. When a CSP holds CUI it needs a FedRAMP Moderate authorization, or equivalency under the DoD CIO memo. An ESP that is not a CSP does not face that bar.
 
 **Responsibility matrix**:
-The document that states, per requirement, what the company implements and what each ESP implements. Also called the customer responsibility matrix (CRM) or shared responsibility matrix. In an engagement it is generated from `ssp.json`, the providers and the conformity statements on their components, as the view page `view/esp-responsibility-matrix.md`; nobody writes it by hand.
+The document that states, per requirement, what the company implements and what each ESP implements. Also called the customer responsibility matrix (CRM) or shared responsibility matrix. In an engagement it is generated from the SSP, the providers and the conformity statements on their components, as the view page `view/esp-responsibility-matrix.md`; nobody writes it by hand.
 _Avoid_: CRM on its own, because it collides with customer relationship management.
 
 **SSP**:
-System Security Plan, required by 3.12.4. In this repo the SSP is one OSCAL document, `ssp.json`, in the engagement repo: the components, the assets and their categories, the outside providers with their role and FedRAMP status, and one conformity statement per objective and component. It is the record (ADR-0007).
+System Security Plan, required by 3.12.4. In this repo the SSP is the `ssp/` folder of the engagement repo, in Markdown with YAML frontmatter: one file per requirement holding the conformity statements on its objectives, and one file per component holding its assets and, for an outside provider, its role and FedRAMP status. It is the record (ADR-0012, which replaced the OSCAL record of ADR-0007).
 
 **SSP view**:
-The read-only Markdown rendered from `ssp.json` into the engagement repo's `view/` folder, for people. No skill reads it and nobody edits it.
+The read-only Markdown that scribe renders from the SSP into the engagement repo's `view/` folder, for people: a prose page per requirement, the asset inventory, and the responsibility matrix. No skill reads it and nobody edits it.
 _Avoid_: calling the view the SSP.
 
 **Scribe**:
-The only skill that changes `ssp.json`. Every other skill that decides something calls it to record the decision, and every skill that reads the SSP calls it to show the record, read from `ssp.json` at that moment.
+The only skill that changes the SSP. Every other skill that decides something calls it to record the decision, and every skill that reads the SSP calls it to show the record, read from the SSP files at that moment. A change is refused, and the files restored, when the result breaks the SSP's rules.
 
 **Conformity statement**:
 The sentence or short paragraph in the SSP that says how one objective is satisfied by one component. It attaches to the objective, not only to the requirement (ADR-0008), and to the component it describes, so its text never needs to name the component. Each carries an implementation status: implemented, partial, planned, alternative (met another way, with the reason), or not applicable (does not apply to this component, with the reason).
@@ -148,7 +148,7 @@ Who the operator is. The **consultant seat** runs engagements for clients and he
 The person driving the skills, in either seat.
 
 **Engagement repo**:
-The per-client git repo that `setup-poamslayer-skills` scaffolds: `CONTEXT.md`, `docs/adr/`, `scope/`, `ssp/` holding `ssp.json`, the generated `view/`, `evidence/`, `policies/`, `.scratch/`, with POA&M and OPA items as tickets on its tracker. There is no Markdown SSP, asset inventory, or responsibility matrix to write: the record holds them and the view shows them.
+The per-client git repo that `setup-poamslayer-skills` scaffolds: `CONTEXT.md`, `docs/adr/`, `scope/`, `ssp/` holding the SSP, the generated `view/`, `evidence/`, `policies/`, `.scratch/`, with POA&M and OPA items as tickets on its tracker. Nobody writes an asset inventory or a responsibility matrix: the SSP holds what they say and the view shows them.
 
 **Fixture**:
 The fictional machine shop under `docs/fixture/` with its known answers and grader rubric. Every skill is checked by a cold run against it.

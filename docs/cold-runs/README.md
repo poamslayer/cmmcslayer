@@ -2,7 +2,7 @@
 
 Graded results of running a skill cold against `docs/fixture/`. One file per run, named `<date>-<skill>.md`, holding the prompt used, the scores from `docs/fixture/grader-rubric.md`, and the evidence for each. Runs recorded before the fixture had an `ssp.json` were graded on the rubric's first three checks, out of 6; from #100 on, every run is also graded on its record, out of 10.
 
-A deliberate change to the fixture's starting state is recorded here too, since it is made the same way, in a cold-run copy: `2026-09-28-fixture-ssp-conversion.md` explains how the fixture got its `ssp.json`, and the `.sh` beside it is the exact list of scribe commands that made it. It has no scores, because it is not a graded run.
+A deliberate change to the fixture's starting state is recorded here too, since it is made the same way, in a cold-run copy: `2026-09-28-fixture-ssp-conversion.md` explains how the fixture got its `ssp.json`, and the `.sh` beside it is the exact list of scribe commands that made it; `2026-10-05-fixture-markdown-ssp-conversion.md` explains how that record became the Markdown SSP of ADR-0012, and the `.py` beside it is the converter that did it. It has no scores, because it is not a graded run.
 
 ## How to run one
 

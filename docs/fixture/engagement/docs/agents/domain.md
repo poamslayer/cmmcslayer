@@ -19,11 +19,12 @@ An engagement repo is always single-context: one glossary, one ADR folder, at th
 ├── docs/adr/
 │   ├── 0001-enclave-or-enterprise.md
 │   └── 0002-gcc-high.md
-├── scope/                      data flow, network diagram, external systems, open items, interviews; the inventory is in ssp.json
+├── scope/                      data flow, network diagram, external systems, open items, interviews; the inventory is in ssp/
 ├── ssp/
-│   ├── ssp.json                the SSP record, one OSCAL document; only scribe changes it
-│   └── oscal/                  the profile and catalog ssp.json imports
-├── view/                       generated from ssp.json for people; read by no skill, edited by nobody
+│   ├── system.md               the system, and its boundary as prose
+│   ├── components/<slug>.md    one per component, with its assets and provider fields
+│   └── 3.1.1.md ...            one per requirement, statements by objective; only scribe changes the SSP
+├── view/                       generated from ssp/ for people; read by no skill, edited by nobody
 ├── evidence/                   one folder per requirement
 └── policies/                   the policy and procedure set
 ```

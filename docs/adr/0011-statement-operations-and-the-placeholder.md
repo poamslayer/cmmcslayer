@@ -1,6 +1,6 @@
 # ADR-0011: Scribe's statement operations, and when an objective is unanswered
 
-Date: 2026-09-29. Status: accepted. Issue #103, from its cold runs. Builds on ADR-0007 and ADR-0008.
+Date: 2026-09-29. Status: accepted. Issue #103, from its cold runs. Builds on ADR-0007 and ADR-0008. Carried into the Markdown record by ADR-0012: the clear and remove distinction and the placeholder rule stay; `set-statements` is retired.
 
 ## Context
 

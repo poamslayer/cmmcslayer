@@ -27,7 +27,7 @@ This skill answers: with limited time before an assessment, which requirements d
 
 ## Inputs
 
-- The record, `ssp/ssp.json`, for each of the seven requirements below, so the drill can compare what the SSP claims against what the requirement actually demands. Call the Skill tool with `scribe` and ask it to show the record for those requirements: each objective's statements come back with their component and status. Never read `view/` instead; it is generated for people and can be stale.
+- The record, the engagement's `ssp/` folder, for each of the seven requirements below, so the drill can compare what the SSP claims against what the requirement actually demands. Read the frontmatter of each `ssp/<requirement>.md`: it lists each objective's statements with their component slug and status. An objective whose only entry is `this-system`, planned and "Not yet written.", has no statement yet. Never read `view/` instead; it is generated for people and can be stale.
 - `evidence/` for whatever artifacts already exist for these seven.
 - The assessment date, so the drill can be scheduled to leave time to fix what it finds.
 

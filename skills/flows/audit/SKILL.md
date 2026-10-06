@@ -17,13 +17,13 @@ A requirement is MET only when every applicable objective is MET (32 CFR 170.24(
 
 Dispatch a fresh subagent per requirement. It gets a clean window, it does not inherit whatever the operator was arguing about a moment ago, and several requirements can be audited at once. The parent session keeps only the returned report.
 
-Before dispatching, read the SSP from the record, `ssp/ssp.json`: call the Skill tool with `scribe` and ask it to show the record for the requirement. What comes back is the record as it stands now: the components, the assets and their categories, the providers with their roles and remarks, and every statement on each of the requirement's objectives, with its component and status. Never read `view/` instead; the view is generated for people and can be stale, and the record is the SSP.
+Before dispatching, read the SSP from the record, the `ssp/` files, as they stand now. The requirement's file, `ssp/<id>.md`, holds in its frontmatter every statement on each of the requirement's objectives, under `objectives` by letter, each with its component's slug, its status, its statement, and its remarks. An objective whose only entry is `this-system`, planned, "Not yet written." has no statement yet; a component's entry that is planned and "Not yet written." is a cleared statement that component still owes. The files in `ssp/components/` hold the components, the assets and their categories, and the providers with their roles and remarks. Never read `view/` instead; the view is generated for people and can be stale, and the record is the SSP.
 
 The subagent gets, and only gets:
 
 - The requirement id.
 - `skills/domain/gap/control-evidence-lookup/controls/<id>.md`, the bar.
-- Scribe's showing of the record for the requirement, as it came back.
+- The requirement's file, `ssp/<id>.md`, and every file in `ssp/components/`.
 - The engagement's `evidence/<id>/`, `scope/data-flow.md`, `scope/network-diagram.md`, `scope/network-diagram.drawio`, and `scope/open-items.md` where they exist, `CONTEXT.md`, and **every file in `policies/`**, not only the ones the SSP names. A contradiction between a statement and a policy the statement never mentions is exactly the kind an assessor finds, so the policy set has to be in view.
 - Any first-hand description of the environment as it actually runs: a site walk, an interview note, a configuration export. **Where this disagrees with the engagement's own scope files, the environment wins and the disagreement is itself a finding**, recorded in Notes. An engagement's inventory is an assertion, and auditing only against the assertion is how a scope error survives all the way to the assessment.
 - The instruction below.
@@ -38,7 +38,7 @@ Nothing else. A subagent that reads the whole engagement repo starts grading the
 
 3. **Take each objective in letter order.** For each one:
    - State what the objective asks for, in the objective's own terms.
-   - Find what the engagement offers: every statement the record holds on that objective, one per component, with its status; the artifacts in the evidence folder; the scope files; the named policy. An objective planned on "This System" with "Not yet written." has no statement at all. A status is the SSP's claim about itself, never evidence that the claim is true.
+   - Find what the engagement offers: every statement the record holds on that objective, one per component, with its status; the artifacts in the evidence folder; the scope files; the named policy. An objective planned on `this-system` with "Not yet written." has no statement at all. A status is the SSP's claim about itself, never evidence that the claim is true.
    - Compare it against the control file's **Sufficient** and **Insufficient** bullets carrying that letter. An engagement answer that matches an Insufficient bullet is NOT MET even when something exists, and that is the most common real finding: evidence is present and it is the wrong evidence.
    - Decide MET, NOT MET, or N/A.
 
@@ -78,7 +78,7 @@ Date: <YYYY-MM-DD>. Points: <n>. POA&M eligible: <yes|no>. Control file confiden
 
 ## Notes
 
-<anything the next reader needs: a policy that contradicts the SSP, an artifact that is a draft, an objective that depends on an ESP whose signed responsibility matrix is not in evidence, a problem scribe reported in the record>
+<anything the next reader needs: a policy that contradicts the SSP, an artifact that is a draft, an objective that depends on an ESP whose signed responsibility matrix is not in evidence, a problem in the record itself>
 ```
 
 **The two adjustable requirements need their state named, not just a number.** 3.5.3 and 3.13.11 carry `points: "3 or 5"` because the deduction depends on how far the implementation got. Write the Points field as the value the current state earns, with the state in brackets: `Points: 3 (multifactor authentication for remote and privileged access only)` or `Points: 5 (not implemented)` for 3.5.3; `Points: 3 (encryption employed, not FIPS validated)` or `Points: 5 (encryption not employed)` for 3.13.11. That distinction decides whether 3.13.11 can go on a POA&M at all, so an audit that leaves it as a range hands the next skill a question it cannot answer. The rule is in `reference/32-cfr-170-24-scoring.md` (also public at https://www.ecfr.gov/current/title-32/section-170.24).

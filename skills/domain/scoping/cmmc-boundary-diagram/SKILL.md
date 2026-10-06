@@ -22,7 +22,7 @@ It draws decisions; it does not make them. The category of each asset comes from
 
 ## Inputs
 
-- The engagement's record, `ssp/ssp.json`: the components, the assets, their categories, and the providers with their FedRAMP status. Read it by calling the Skill tool with `scribe` and asking it to show the record. Never read `view/asset-inventory.md`.
+- The engagement's record, `ssp/components/*.md`: the components, the assets, their categories, and the providers with their FedRAMP status. Read the files directly. Never read `view/asset-inventory.md`.
 - `scope/network-diagram.md`: the notes file, holding whatever diagram the client handed over and the separation verdicts `logical-separation-test` left there.
 - `scope/data-flow.md`, for which boundary crossings carry CUI.
 - `scope/network-diagram.drawio`, if a previous run left one. Update it rather than starting over, so the layout the operator already reviewed survives.
@@ -143,7 +143,7 @@ The connector displays the diagram but saves nothing. Write the same XML, wrappe
 
 - `scope/network-diagram.drawio`, and its PNG when it could be exported.
 - One line per assumption and per finding on `scope/open-items.md`, each with who will check it. An assumption made while drawing is an unverified fact, and unverified facts live there, never in the record.
-- Nothing in `ssp/ssp.json`. This skill records no decision; if drawing showed that one is wrong, the owning skill corrects it through `scribe`.
+- Nothing in the `ssp/` files. This skill records no decision; if drawing showed that one is wrong, the owning skill corrects it through `scribe`.
 
 Then reply to the operator. Keep it short; the diagram is visible, so do not describe it again.
 

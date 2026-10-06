@@ -1,50 +1,51 @@
 #!/usr/bin/env python3
-"""Check the fixture engagement's record, docs/fixture/engagement/ssp/ssp.json.
+"""Check the fixture engagement's record, the SSP under docs/fixture/engagement/ssp/.
 
-The fixture's ssp.json was converted once from the previous consultant's
-Markdown SSP and asset inventory (#100; docs/cold-runs/2026-09-28-fixture-ssp-conversion.md).
-That Markdown was retired in #105 (docs/cold-runs/2026-09-29-fixture-markdown-ssp-retired.md),
-so what it held is kept here, as the answer key's 6.14 states it, and the
-record is held to it:
+The fixture's record was converted once from the previous consultant's
+Markdown SSP and asset inventory into ssp.json (#100;
+docs/cold-runs/2026-09-28-fixture-ssp-conversion.md), and from ssp.json into
+the Markdown SSP of ADR-0012 (#128;
+docs/cold-runs/2026-10-05-fixture-markdown-ssp-conversion.md). What the
+previous consultant left is kept here, as the answer key's 6.14 states it,
+and the record is held to it:
 
-1. The record passes oscal-cli with our constraints file, through
-   scripts/check_record.py, the same command the grader rubric uses.
+1. The record passes scribe's check, through scripts/check_record.py, the same
+   command the grader rubric uses.
 2. Its assets are the ones the previous consultant left, each with the
    category they gave it, mistakes included, and no other; out-of-scope assets
    carry a justification.
 3. Its statements are on the 28 requirements the previous consultant wrote,
    and on no other.
 4. The view is there, each page carrying the generated-file notice, and it is
-   current: scribe's render, run on a copy, produces exactly the same pages.
+   current: scribe's renderer, run on a copy, produces exactly the same pages.
 5. The rubric bites: a copy of the fixture with one asset's category misspelled
-   fails scripts/check_record.py on the constraint that forbids it.
-6. The Markdown SSP stays retired: no Markdown file under ssp/, and no asset
-   inventory or responsibility matrix under scope/.
+   fails scripts/check_record.py, naming the category.
+6. What is gone stays gone: no ssp.json or other OSCAL file anywhere in the
+   fixture engagement, and no asset inventory or responsibility matrix under
+   scope/ (#105).
 
     python3 scripts/check_fixture_record.py
-
-Needs Java and oscal-cli; about fifteen seconds.
 """
 
 from __future__ import annotations
 
-import json
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-ENGAGEMENT = Path("docs/fixture/engagement")
-SSP = ENGAGEMENT / "ssp" / "ssp.json"
-CHECK_RECORD = Path("scripts/check_record.py")
-EDIT = Path("skills/flows/scribe/ssp_edit.py")
-NS = "https://poamslayer.github.io/ns/cmmc"
+ROOT = Path(__file__).resolve().parents[1]
+ENGAGEMENT = ROOT / "docs" / "fixture" / "engagement"
+CHECK_RECORD = ROOT / "scripts" / "check_record.py"
+RENDER = ROOT / "skills" / "flows" / "scribe" / "render_view.py"
 NOTICE_START = "> **Generated file. Do not edit.**"
-UNWRITTEN = "Not yet written."
+
+sys.path.insert(0, str(ROOT / "skills" / "flows" / "scribe"))
+from ssp_record import default_requirements, is_unwritten, load, load_requirements  # noqa: E402
 
 # The assets as the previous consultant left them (known-answers.md 6.14,
-# "Assets, as left"): name, category, and the kind of a Specialized Asset.
+# "Assets, as left"): id, category, and the kind of a Specialized Asset.
 # Every other row of their inventory was "not listed" and is not an asset.
 OFFICE_ENDPOINTS = ("OFFICE-DANA", "OFFICE-LUIS", "ENG-PRIYA", "PROG-TOM", "QC-MARIA",
                     "SHIP-JORDAN", "PURCH-ELLEN", "ACCT-ROB", "NADIA-LT")
@@ -64,66 +65,49 @@ WRITTEN = {
     "3.3.1", "3.5.3", "3.6.3", "3.8.4", "3.12.4", "3.13.11",
 }
 
-# What the retired Markdown SSP left, which must not come back.
-RETIRED = ("ssp/*.md", "scope/asset-inventory.md", "scope/esp-responsibility-matrix.md")
-
-
-def prop(obj: dict, name: str, ns: str | None = NS) -> str | None:
-    for p in obj.get("props", []):
-        if p.get("name") == name and p.get("ns") == ns:
-            return p.get("value")
-    return None
+# What must not come back: the OSCAL record, and the retired Markdown inventory and matrix.
+GONE = ("**/*.json", "**/oscal", "scope/asset-inventory.md", "scope/esp-responsibility-matrix.md")
 
 
 def record_check(engagement: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(CHECK_RECORD), str(engagement)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    return subprocess.run([sys.executable, str(CHECK_RECORD), str(engagement)],
+                          capture_output=True, text=True, check=False)
 
 
-def check_assets(doc: dict, failures: list[str]) -> None:
-    items = {
-        prop(i, "asset-id", ns=None): i
-        for i in doc["system-security-plan"]["system-implementation"].get("inventory-items", [])
-    }
+def check_assets(record, failures: list[str]) -> None:
+    where = "docs/fixture/engagement/ssp/components/"
+    assets = {a.get("id"): (a, c) for c in record.components.values() for a in c.assets}
     for name, wanted in AS_LEFT.items():
-        item = items.get(name)
-        if item is None:
-            failures.append(f"{SSP}: {name} was left as {wanted[0]} and is missing from the record")
+        if name not in assets:
+            failures.append(f"{where}: {name} was left as {wanted[0]} and is missing from the record")
             continue
-        have = (prop(item, "asset-category"), prop(item, "specialized-asset-type"))
+        asset, component = assets[name]
+        have = (component.asset_category(asset), asset.get("kind"))
         if have != wanted:
-            failures.append(f"{SSP}: {name} is {have} in the record; it was left as {wanted}")
-        if have[0] == "out-of-scope-asset" and not (item.get("remarks") or "").strip():
-            failures.append(f"{SSP}: {name} is out of scope with no justification")
-    for name in sorted(set(items) - set(AS_LEFT), key=str):
-        failures.append(f"{SSP}: {name} is an asset in the record and was not left in the inventory")
+            failures.append(f"{where}{component.slug}.md: {name} is {have} in the record; it was left as {wanted}")
+    for name in sorted(set(assets) - set(AS_LEFT), key=str):
+        failures.append(f"{where}{assets[name][1].slug}.md: {name} is an asset in the record and was not left in the inventory")
 
 
-def check_statements(doc: dict, failures: list[str]) -> None:
-    written = set()
-    for req in doc["system-security-plan"]["control-implementation"]["implemented-requirements"]:
-        family, number, sub = (int(x) for x in req["control-id"].lstrip("_").split("."))
-        label = f"{family}.{number}.{sub}"
-        if any(
-            bc.get("description") != UNWRITTEN
-            for s in req.get("statements", [])
-            for bc in s.get("by-components", [])
-        ):
-            written.add(label)
-    for label in sorted(WRITTEN - written):
-        failures.append(f"{SSP}: {label} was written by the previous consultant and has no statement in the record")
-    for label in sorted(written - WRITTEN):
-        failures.append(f"{SSP}: {label} has a statement in the record the previous consultant never wrote")
+def check_statements(record, failures: list[str]) -> None:
+    written = {
+        rid
+        for rid, data in record.statements.items()
+        for entries in (data.get("objectives") or {}).values()
+        for e in entries or []
+        if isinstance(e, dict) and not is_unwritten(e)
+    }
+    for rid in sorted(WRITTEN - written):
+        failures.append(f"docs/fixture/engagement/ssp/{rid}.md: written by the previous consultant and has no statement in the record")
+    for rid in sorted(written - WRITTEN):
+        failures.append(f"docs/fixture/engagement/ssp/{rid}.md: has a statement the previous consultant never wrote")
 
 
-def check_retired(failures: list[str]) -> None:
-    for pattern in RETIRED:
+def check_gone(failures: list[str]) -> None:
+    for pattern in GONE:
         for path in sorted(ENGAGEMENT.glob(pattern)):
-            failures.append(f"{path}: the Markdown SSP is retired; ssp.json is the record and view/ is generated from it")
+            failures.append(f"{path.relative_to(ROOT)}: gone from the fixture; the SSP is the Markdown under ssp/ (ADR-0012) "
+                            "and view/ is generated from it")
 
 
 def view_pages(view: Path) -> dict[str, bytes]:
@@ -143,61 +127,50 @@ def check_view(failures: list[str]) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         copy = Path(tmp) / "engagement"
         shutil.copytree(ENGAGEMENT, copy)
-        proc = subprocess.run([sys.executable, str(EDIT), "--engagement", str(copy), "render"],
-                              capture_output=True, text=True, check=False)
+        proc = subprocess.run([sys.executable, str(RENDER), str(copy)], capture_output=True, text=True, check=False)
         if proc.returncode != 0:
-            failures.append(f"{EDIT} render on a copy of the fixture: {proc.stderr.strip()}")
+            failures.append(f"{RENDER.relative_to(ROOT)} on a copy of the fixture: {proc.stdout.strip()}{proc.stderr.strip()}")
             return
         rendered = view_pages(copy / "view")
     stale = sorted(name for name in set(pages) | set(rendered) if pages.get(name) != rendered.get(name))
     if stale:
-        failures.append(f"{view}: not what scribe renders from ssp.json; stale or missing: {', '.join(stale[:5])}"
-                        " (re-render it in a cold-run copy with ssp_edit.py render and copy the view back)")
+        failures.append(f"{view}: not what scribe renders from ssp/; stale or missing: {', '.join(stale[:5])}"
+                        " (re-render it in a cold-run copy with render_view.py and copy the view back)")
 
 
 def check_rubric_bites(failures: list[str]) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         copy = Path(tmp) / "engagement"
         shutil.copytree(ENGAGEMENT, copy)
-        ssp = copy / "ssp" / "ssp.json"
-        doc = json.loads(ssp.read_text(encoding="utf-8"))
-        broken = False
-        for item in doc["system-security-plan"]["system-implementation"].get("inventory-items", []):
-            for p in item.get("props", []):
-                if p.get("name") == "asset-category" and p.get("ns") == NS and p.get("value") == "cui-asset":
-                    p["value"] = "cui-asets"
-                    broken = True
-                    break
-            if broken:
-                break
-        if not broken:
-            failures.append(f"{SSP}: no CUI Asset to misspell, so the rubric's record check was not tested")
+        target = copy / "ssp" / "components" / "sag-nas.md"
+        text = target.read_text(encoding="utf-8")
+        if "category: cui-asset\n" not in text:
+            failures.append("docs/fixture/engagement/ssp/components/sag-nas.md: no CUI Asset to misspell, "
+                            "so the rubric's record check was not tested")
             return
-        ssp.write_text(json.dumps(doc, indent=2), encoding="utf-8")
+        target.write_text(text.replace("category: cui-asset\n", "category: cui-asets\n", 1), encoding="utf-8")
         proc = record_check(copy)
         if proc.returncode == 0:
-            failures.append(f"{CHECK_RECORD}: passed a record with the category cui-asets")
-        elif "cmmc-asset-category-values" not in proc.stdout:
-            failures.append(f"{CHECK_RECORD}: failed a misspelled category without naming cmmc-asset-category-values")
+            failures.append(f"{CHECK_RECORD.relative_to(ROOT)}: passed a record with the category cui-asets")
+        elif '"cui-asets"' not in proc.stdout:
+            failures.append(f"{CHECK_RECORD.relative_to(ROOT)}: failed a misspelled category without naming it")
 
 
 def main() -> int:
     failures: list[str] = []
     proc = record_check(ENGAGEMENT)
     if proc.returncode != 0:
-        # Relay check_record.py's own FAIL line and its indented detail as one failure.
-        block = [ln for ln in proc.stdout.splitlines() if not ln.startswith("record:")]
-        failures.append("\n".join(block).removeprefix("FAIL "))
+        failures.append("\n".join(ln for ln in proc.stdout.splitlines() if not ln.startswith("record:")).removeprefix("FAIL "))
     else:
-        doc = json.loads(SSP.read_text(encoding="utf-8"))
-        check_assets(doc, failures)
-        check_statements(doc, failures)
+        record = load(ENGAGEMENT, load_requirements(default_requirements()))
+        check_assets(record, failures)
+        check_statements(record, failures)
         check_view(failures)
         check_rubric_bites(failures)
-    check_retired(failures)
+    check_gone(failures)
     for failure in failures:
         print(f"FAIL {failure}")
-    print(f"fixture record: oscal-cli, assets, statements, view, the rubric's record check, and the retired Markdown, {len(failures)} failures")
+    print(f"fixture record: scribe's check, assets, statements, view, the rubric's record check, and no OSCAL, {len(failures)} failures")
     return 1 if failures else 0
 
 

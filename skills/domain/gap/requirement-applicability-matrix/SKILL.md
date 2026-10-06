@@ -19,11 +19,11 @@ public_sources:
 
 # Requirement applicability matrix
 
-Scope answers one question: do I assess this asset at all? Applicability answers the next one: which requirements bear on this in-scope asset? This skill answers the second question, one component at a time. It records every "does not apply" and every "met another way" in the engagement's SSP, `ssp/ssp.json`, by calling the Skill tool with `scribe`, and keeps the whole answer as a requirements traceability matrix. It refuses to draw the scope line (call the Skill tool with `cmmc-scope-boundary` for that), it refuses to judge whether an implementation is good enough (that is `control-evidence-lookup`), and it refuses to run on an asset that has no category yet.
+Scope answers one question: do I assess this asset at all? Applicability answers the next one: which requirements bear on this in-scope asset? This skill answers the second question, one component at a time. It records every "does not apply" and every "met another way" in the engagement's SSP, the `ssp/` folder, by calling the Skill tool with `scribe`, and keeps the whole answer as a requirements traceability matrix. It refuses to draw the scope line (call the Skill tool with `cmmc-scope-boundary` for that), it refuses to judge whether an implementation is good enough (that is `control-evidence-lookup`), and it refuses to run on an asset that has no category yet.
 
 ## Inputs
 
-- The record, `ssp/ssp.json`: the components, every asset with its category (CUI Asset, Specialized Asset, Security Protection Asset, Contractor Risk Managed Asset, or Out-of-Scope Asset), the providers, and the statements already recorded. Read it by calling the Skill tool with `scribe` and asking it to show the record; that is the current state. Never read `view/`, which is generated for people.
+- The record, the engagement's `ssp/` folder: the components, every asset with its category (CUI Asset, Specialized Asset, Security Protection Asset, Contractor Risk Managed Asset, or Out-of-Scope Asset), and the providers, in `ssp/components/*.md`; and the statements already recorded, in the frontmatter of each `ssp/<requirement>.md`. Read the files directly; they are the current state. A component's entry that is planned and "Not yet written." is a cleared statement that component still owes, not a row of this matrix. Never read `view/`, which is generated for people.
 - `scope/open-items.md`, for assets scoping has not placed yet.
 - `scope/network-diagram.drawio`, `scope/network-diagram.md`, or the data flow notes, so the function test can see where CUI is actually encrypted, authenticated, and logged.
 - The engagement `CONTEXT.md` for the client's component vocabulary.
@@ -57,7 +57,7 @@ Scope answers one question: do I assess this asset at all? Applicability answers
 
 9. **Mark the compliance floor versus discretionary rows.** Every row that implements a requirement is a minimum compliance requirement: driven from outside by the contract. Anything you add beyond the objectives is a discretionary security requirement: driven by your own risk appetite. Tag discretionary rows so `over-engineering-guard` can see which spend is optional. Being compliant is not the same as being secure; the matrix records what the objectives require, and the discretionary tag records what you chose on top.
 
-10. **Record the not applicable and alternative rows through scribe.** Each outcome maps to one implementation status, recorded on every objective of the requirement for that component. A not applicable row does not answer the objective for the system: scribe keeps it planned on "This System" until a component records how it is met, so recording the not applicable rows first leaves no requirement reading as if it applied nowhere.
+10. **Record the not applicable and alternative rows through scribe.** Each outcome maps to one implementation status, recorded on every objective of the requirement for that component. A not applicable row does not answer the objective for the system: scribe keeps `this-system`, the placeholder, planned and "Not yet written." on the objective until a component records how it is met, so recording the not applicable rows first leaves no requirement reading as if it applied nowhere.
 
     | Matrix outcome | Status in the record | Statement | Remarks |
     |---|---|---|---|
@@ -68,13 +68,13 @@ Scope answers one question: do I assess this asset at all? Applicability answers
 
     Not applicable means the requirement does not apply to this component; alternative means it applies and is met another way. Never use one for the other. A Specialized Asset's component gets no not applicable rows: it is not assessed against the requirements at Level 2, which is different from their not applying, so its matrix records the risk-based policy instead. When an objective of the requirement does apply to the component while the others do not, record the status only on the objectives it covers.
 
-    Show the operator each component's rows as a table, then call the Skill tool with `scribe` and give it the component's rows as one set, so they are validated once. Record straight away if the operator asked you not to stop, and show the tables afterwards. If scribe refuses, the refusal names the row: fix it and give scribe the set again. When the record already holds a statement on that objective and component that your row contradicts, say so to the operator and record yours only if they confirm; it replaces the old one. A statement on another component that the matrix shows is wrong, such as a not applicable claim the facts contradict, is not yours to change: put it on the open items list for `to-ssp`. Never write `ssp.json` yourself, and never edit anything under `view/`.
+    Show the operator each component's rows as a table, then call the Skill tool with `scribe` and give it the component's rows together, naming the component by its slug, so they are recorded and checked as one change. Record straight away if the operator asked you not to stop, and show the tables afterwards. If scribe refuses, its check line names the file and objective: quote it, fix the row, and give scribe the rows again. When the record already holds a statement on that objective and component that your row contradicts, say so to the operator and record yours only if they confirm; it replaces the old one. A statement on another component that the matrix shows is wrong, such as a not applicable claim the facts contradict, is not yours to change: put it on the open items list for `to-ssp`. Never write the `ssp/` files yourself, and never edit anything under `view/`.
 
 11. **Write the matrix and hand it forward.** One table per component, one row per requirement, kept as the working note `scope/applicability-matrix.md`. The not applicable and alternative rows are also in the record; `to-ssp` writes the implement rows from the matrix, not the other way around.
 
 ## Output
 
-- The not applicable and alternative statuses, with their reasons, recorded in `ssp/ssp.json` by scribe on every objective they cover (step 10). Scribe re-renders `view/requirements/<id>.md`.
+- The not applicable and alternative statuses, with their reasons, recorded in the `ssp/` files by scribe on every objective they cover (step 10). Scribe re-renders `view/requirements/<id>.md`.
 - `scope/applicability-matrix.md`, the working note. It stays Markdown and holds every row, including the inherited and implement rows the record does not.
 - A one-line entry in the engagement `CONTEXT.md` glossary for each component name the matrix introduces.
 - Any component that needs splitting, or asset scoping has not placed, on `scope/open-items.md`.
@@ -82,7 +82,7 @@ Scope answers one question: do I assess this asset at all? Applicability answers
 ```markdown
 # Requirements traceability matrix
 
-Scope closed on: YYYY-MM-DD (ssp/ssp.json at commit <sha>)
+Scope closed on: YYYY-MM-DD (ssp/ at commit <sha>)
 
 ## Components
 
