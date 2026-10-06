@@ -72,22 +72,21 @@ Level 1 per-control content, Level 3, and 800-172. Rev 3 control text, beyond th
 
 Each of these is out of scope because the source material does not cover it, and the repo does not fill the gap with guesses.
 
-## A note on sources
+## Where this comes from
 
-Every claim traces to a public source, and every cited URL is listed once in `reference/authorities.md` with a tier. The tier limits what the source can support:
+The judgment in these skills is mine. I wrote them while passing a CMMC Level 2 assessment, and each call is the one I'd make on a real engagement.
 
-1. Regulation and statute, such as 32 CFR Part 170, the DFARS clauses, and 800-171 with 800-171A, can establish a rule.
-2. Official federal guidance, such as the Scoping Guide, the Assessment Guide, the DoD CIO FAQs, and the CUI Registry, says how the government reads a rule.
-3. Public secondary sources, such as a talk you can go and watch, a public wiki, or vendor documentation, support a method, never a status.
-4. Practitioner consensus is what practitioners have found in the field. The skill says so and names nobody.
+Where a rule matters, the skill cites it. Every cited URL is listed once in `reference/authorities.md` with a tier, and the tier limits what the source can support:
 
-Whether something is CUI is a status question, so a skill answers it only from tier 1 or tier 2. `verify.sh` fails on a citation missing from the register. See `docs/adr/0004-authority-tiers.md`.
+- Regulation and statute, such as 32 CFR Part 170, the DFARS clauses, and 800-171 with 800-171A, can establish a rule.
+- Official federal guidance, such as the Scoping Guide, the Assessment Guide, the DoD CIO FAQs, and the CUI Registry, says how the government reads a rule.
+- Public secondary sources, such as a talk you can go and watch, a public wiki, or vendor documentation, support a method, never a status.
 
-The material came from people talking candidly in a private room. The repo publishes what they learned and leaves out who they are. `scripts/scrub_check.py` checks every file on every run and fails the build when a file breaks that rule, so nobody has to remember it.
+Whether something is CUI is a status question, so a skill answers it only from regulation or official guidance. `verify.sh` fails on a citation missing from the register. See `docs/adr/0004-authority-tiers.md`.
 
 ## How this repo was published
 
-This public repository is a fresh copy of a private working repository, made on 2026-10-05 with no history. The planning documents and the private term lists the scrub check reads stay in the private repository, because they name the community this material came from. That is why the history here starts at one commit.
+This public repository is a fresh copy of a private working repository, made on 2026-10-05 with no history. The planning documents and the private term lists the scrub check reads stay in the private repository, because they name real people. That is why the history here starts at one commit.
 
 The control files already reach readers another way. `scripts/sync_dictionary.py` copies them one way into `cmmc-dictionary`, a separate public repository that serves `dictionary.poamslayer.com`, and strips `vault_sources` on the way. A deploy carries no git history, so the site did not have to wait for the gate. It does not settle publishing this repository either. See `docs/adr/0003-dictionary-site-is-a-separate-public-repo.md`.
 
