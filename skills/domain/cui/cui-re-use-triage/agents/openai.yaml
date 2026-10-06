@@ -1,0 +1,3 @@
+interface:
+  display_name: "CUI Re-use Triage"
+  short_description: "Separate re-used CUI from a company's own work in the documents it creates, then route each to the determination workflow"

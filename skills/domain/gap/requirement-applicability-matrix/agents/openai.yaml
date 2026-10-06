@@ -1,0 +1,3 @@
+interface:
+  display_name: "Requirement Applicability Matrix"
+  short_description: "Which of the 110 requirements apply to each in-scope component type, as a traceability matrix"

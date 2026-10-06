@@ -1,0 +1,5 @@
+interface:
+  display_name: "Setup poamslayer Skills"
+  short_description: "Scaffold a CMMC engagement repo and configure the tracker"
+policy:
+  allow_implicit_invocation: false

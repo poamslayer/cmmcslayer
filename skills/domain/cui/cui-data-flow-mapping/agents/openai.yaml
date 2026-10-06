@@ -1,0 +1,3 @@
+interface:
+  display_name: "CUI Data Flow Mapping"
+  short_description: "Train, interview, and map how CUI moves through the company before assets are categorized"

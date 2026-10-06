@@ -1,0 +1,3 @@
+interface:
+  display_name: "Scribe"
+  short_description: "Record a decision in the engagement's ssp.json"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "SSP Statement Writer"
+  short_description: "One conformity statement per assessment objective"

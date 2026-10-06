@@ -1,0 +1,3 @@
+interface:
+  display_name: "Supplier CUI Release Procedure"
+  short_description: "Decide the release path, run the pre-send checks, and record approval before CUI leaves for an outside supplier"

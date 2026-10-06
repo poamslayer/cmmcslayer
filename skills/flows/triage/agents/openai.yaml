@@ -1,0 +1,5 @@
+interface:
+  display_name: "Triage"
+  short_description: "Turn outside findings into agent-ready tickets"
+policy:
+  allow_implicit_invocation: false

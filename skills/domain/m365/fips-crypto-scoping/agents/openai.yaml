@@ -1,0 +1,3 @@
+interface:
+  display_name: "FIPS Crypto Scoping"
+  short_description: "Map CUI encryption and decryption points and issue a FIPS-validated verdict per device"

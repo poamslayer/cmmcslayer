@@ -1,0 +1,3 @@
+interface:
+  display_name: "Exchange DLP Enclave Pattern"
+  short_description: "Decide the scoping outcome for a GCC High Exchange DLP re-route enclave, and what it must defend"

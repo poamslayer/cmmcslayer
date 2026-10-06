@@ -1,0 +1,3 @@
+interface:
+  display_name: "Endpoint and VDI Scoping"
+  short_description: "Place a laptop, thin client, or remote connection in or out of CMMC scope"

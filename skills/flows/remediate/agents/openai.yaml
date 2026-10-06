@@ -1,0 +1,5 @@
+interface:
+  display_name: "Remediate"
+  short_description: "Drive one ticket to closure, proven by audit"
+policy:
+  allow_implicit_invocation: false

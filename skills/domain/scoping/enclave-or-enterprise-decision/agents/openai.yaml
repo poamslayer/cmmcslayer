@@ -1,0 +1,3 @@
+interface:
+  display_name: "Enclave or Enterprise Decision"
+  short_description: "Choose the CMMC architecture on the business case, five options, three-year horizon, recorded as an ADR"

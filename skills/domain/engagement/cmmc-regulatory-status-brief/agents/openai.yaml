@@ -1,0 +1,3 @@
+interface:
+  display_name: "CMMC Regulatory Status Brief"
+  short_description: "What is in force today, with an as-of date"

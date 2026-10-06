@@ -1,0 +1,3 @@
+interface:
+  display_name: "Policy After Procedure Sequencing"
+  short_description: "Sequence CUI documentation as flow, process, tweak, then policy, with the discovery pass and hierarchy that make it defensible"

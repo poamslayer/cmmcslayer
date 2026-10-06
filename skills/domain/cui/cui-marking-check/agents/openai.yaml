@@ -1,0 +1,3 @@
+interface:
+  display_name: "CUI Marking Check"
+  short_description: "Banner, designation block, and CTI overlay findings table with fixes per document"

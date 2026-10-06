@@ -1,0 +1,3 @@
+interface:
+  display_name: "SSP Lint"
+  short_description: "Review the SSP on house style and evidence"

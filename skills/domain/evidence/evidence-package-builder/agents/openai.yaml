@@ -1,0 +1,3 @@
+interface:
+  display_name: "Evidence package builder"
+  short_description: "Per-objective evidence plus the recurring monitoring calendar"

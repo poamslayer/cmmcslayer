@@ -1,0 +1,3 @@
+interface:
+  display_name: "CUI Determination Workflow"
+  short_description: "Determine whether a document or data type is CUI using the ownership-first ruleset"

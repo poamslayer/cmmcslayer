@@ -1,0 +1,5 @@
+interface:
+  display_name: "To SSP"
+  short_description: "Write one conformity statement per assessment objective"
+policy:
+  allow_implicit_invocation: false

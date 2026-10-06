@@ -1,0 +1,3 @@
+interface:
+  display_name: "GCC High Decision"
+  short_description: "Decide Commercial, GCC, or GCC High from the export-control answer first, never from price"

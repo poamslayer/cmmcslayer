@@ -1,0 +1,5 @@
+interface:
+  display_name: "Ask poamslayer"
+  short_description: "Find the right skill or flow for this engagement"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Over-Engineering Guard"
+  short_description: "Test a proposed control against the objective that would require it, with named cases where the cheaper option already passes"

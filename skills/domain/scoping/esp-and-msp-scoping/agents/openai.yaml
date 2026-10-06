@@ -1,0 +1,3 @@
+interface:
+  display_name: "ESP and MSP Scoping"
+  short_description: "Place an MSP, RMM, backup, SOC, or SaaS provider in scope and start the responsibility matrix"

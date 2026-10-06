@@ -1,0 +1,5 @@
+interface:
+  display_name: "Wayfinder"
+  short_description: "Chart an engagement's contested decisions and resolve them one at a time"
+policy:
+  allow_implicit_invocation: false

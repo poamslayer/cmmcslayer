@@ -1,0 +1,3 @@
+interface:
+  display_name: "CMMC Boundary Diagram"
+  short_description: "Draw the network diagram of the Assessment Scope in draw.io, colored by asset category"

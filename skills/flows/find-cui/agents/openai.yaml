@@ -1,0 +1,5 @@
+interface:
+  display_name: "Find CUI"
+  short_description: "Train, interview by role, determine, and map the CUI flow"
+policy:
+  allow_implicit_invocation: false

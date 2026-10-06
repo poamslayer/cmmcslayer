@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Provenance. This repo's own work, MIT. ADR-0009, point 5.
+
+  The one definition of every field in the namespace
+  https://poamslayer.github.io/ns/cmmc . Each field is an OSCAL prop that
+  carries ns="https://poamslayer.github.io/ns/cmmc". This file states each
+  field's name, where it may appear, how many times, and its allowed values,
+  and oscal-cli enforces it:
+
+    oscal-cli validate ssp.json -c reference/oscal/cmmc-constraints.xml
+
+  (The file goes before -c: oscal-cli reads every argument after -c as a
+  constraints file.)
+
+  NIST's own constraints never look at a prop in another namespace, so without
+  this file a typo such as "cui-asets" passes validation.
+
+  First version, four fields:
+
+  asset-category          on inventory-item (exactly one) and component (at most one)
+  specialized-asset-type  on inventory-item or component, only with asset-category
+                          specialized-asset; required on an inventory-item that has it
+  provider-role           on component (at most one)
+  fedramp-status          on component (at most one), only with provider-role csp,
+                          and required when provider-role is csp
+
+  Values come from CONTEXT.md. The five asset categories are the ones in
+  32 CFR 170.19. A component carries a category only when every asset behind it
+  shares it; that cross-check belongs to the edit command, not to this file.
+
+  Adding a field or a value is a deliberate change: add it here, in CONTEXT.md
+  if it is a new term, in reference/oscal/README.md, and in
+  EXPECTED_RULES and the BAD self-test SSP in scripts/check_oscal_cli.py.
+-->
+<metaschema-meta-constraints xmlns="http://csrc.nist.gov/ns/oscal/metaschema/1.0">
+
+  <context>
+    <metapath target="/system-security-plan"/>
+    <constraints>
+      <allowed-values id="cmmc-field-names" target=".//prop[@ns='https://poamslayer.github.io/ns/cmmc']/@name" allow-other="no">
+        <enum value="asset-category">The asset's CMMC category.</enum>
+        <enum value="specialized-asset-type">The kind of Specialized Asset.</enum>
+        <enum value="provider-role">The role of an outside provider.</enum>
+        <enum value="fedramp-status">A cloud provider's FedRAMP status.</enum>
+      </allowed-values>
+      <expect id="cmmc-asset-category-placement" target="."
+        test="count(.//prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='asset-category']) = count(system-implementation/(component|inventory-item)/prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='asset-category'])">
+        <message>asset-category may appear only on a component or an inventory-item in system-implementation.</message>
+      </expect>
+      <expect id="cmmc-specialized-asset-type-placement" target="."
+        test="count(.//prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='specialized-asset-type']) = count(system-implementation/(component|inventory-item)/prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='specialized-asset-type'])">
+        <message>specialized-asset-type may appear only on a component or an inventory-item in system-implementation.</message>
+      </expect>
+      <expect id="cmmc-provider-role-placement" target="."
+        test="count(.//prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='provider-role']) = count(system-implementation/component/prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='provider-role'])">
+        <message>provider-role may appear only on a component in system-implementation.</message>
+      </expect>
+      <expect id="cmmc-fedramp-status-placement" target="."
+        test="count(.//prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='fedramp-status']) = count(system-implementation/component/prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='fedramp-status'])">
+        <message>fedramp-status may appear only on a component in system-implementation.</message>
+      </expect>
+    </constraints>
+  </context>
+
+  <context>
+    <metapath target="/system-security-plan/system-implementation/inventory-item"/>
+    <metapath target="/system-security-plan/system-implementation/component"/>
+    <constraints>
+      <allowed-values id="cmmc-asset-category-values" target="prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='asset-category']/@value" allow-other="no">
+        <enum value="cui-asset">CUI Asset: processes, stores, or transmits CUI.</enum>
+        <enum value="security-protection-asset">Security Protection Asset: protects the scope.</enum>
+        <enum value="contractor-risk-managed-asset">Contractor Risk Managed Asset: could touch CUI but is not meant to.</enum>
+        <enum value="specialized-asset">Specialized Asset: IoT, IIoT, OT, GFE, restricted information system, or test equipment.</enum>
+        <enum value="out-of-scope-asset">Out-of-Scope Asset: cannot process, store, or transmit CUI; justification in remarks.</enum>
+      </allowed-values>
+      <has-cardinality id="cmmc-asset-category-at-most-one" target="prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='asset-category']" max-occurs="1"/>
+      <allowed-values id="cmmc-specialized-asset-type-values" target="prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='specialized-asset-type']/@value" allow-other="no">
+        <enum value="iot">Internet of Things device.</enum>
+        <enum value="iiot">Industrial Internet of Things device.</enum>
+        <enum value="ot">Operational technology.</enum>
+        <enum value="gfe">Government furnished equipment.</enum>
+        <enum value="restricted-information-system">Restricted information system.</enum>
+        <enum value="test-equipment">Test equipment.</enum>
+      </allowed-values>
+      <has-cardinality id="cmmc-specialized-asset-type-at-most-one" target="prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='specialized-asset-type']" max-occurs="1"/>
+      <expect id="cmmc-specialized-asset-type-needs-category" target="."
+        test="not(exists(prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='specialized-asset-type'])) or prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='asset-category']/@value = 'specialized-asset'">
+        <message>specialized-asset-type is allowed only where asset-category is specialized-asset.</message>
+      </expect>
+    </constraints>
+  </context>
+
+  <context>
+    <metapath target="/system-security-plan/system-implementation/inventory-item"/>
+    <constraints>
+      <has-cardinality id="cmmc-asset-category-required" target="prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='asset-category']" min-occurs="1" max-occurs="1"/>
+      <expect id="cmmc-specialized-asset-needs-type" target="."
+        test="not(prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='asset-category']/@value = 'specialized-asset') or exists(prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='specialized-asset-type'])">
+        <message>An asset in the specialized-asset category must record its specialized-asset-type.</message>
+      </expect>
+    </constraints>
+  </context>
+
+  <context>
+    <metapath target="/system-security-plan/system-implementation/component"/>
+    <constraints>
+      <allowed-values id="cmmc-provider-role-values" target="prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='provider-role']/@value" allow-other="no">
+        <enum value="csp">Cloud Service Provider: an ESP offering cloud services; faces the FedRAMP bar when it holds CUI.</enum>
+        <enum value="msp">Managed Service Provider (an ESP).</enum>
+        <enum value="mssp">Managed Security Service Provider (an ESP).</enum>
+        <enum value="soc">Security operations center provider (an ESP).</enum>
+        <enum value="rmm">Remote monitoring and management provider (an ESP).</enum>
+        <enum value="other-esp">Any other External Service Provider.</enum>
+      </allowed-values>
+      <has-cardinality id="cmmc-provider-role-at-most-one" target="prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='provider-role']" max-occurs="1"/>
+      <allowed-values id="cmmc-fedramp-status-values" target="prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='fedramp-status']/@value" allow-other="no">
+        <enum value="fedramp-moderate-authorized">FedRAMP Moderate authorized.</enum>
+        <enum value="fedramp-moderate-equivalent">FedRAMP Moderate equivalent under the DoD CIO memo.</enum>
+        <enum value="none">Neither.</enum>
+      </allowed-values>
+      <has-cardinality id="cmmc-fedramp-status-at-most-one" target="prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='fedramp-status']" max-occurs="1"/>
+      <expect id="cmmc-fedramp-status-needs-csp" target="."
+        test="not(exists(prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='fedramp-status'])) or prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='provider-role']/@value = 'csp'">
+        <message>fedramp-status is allowed only on a component whose provider-role is csp.</message>
+      </expect>
+      <expect id="cmmc-csp-needs-fedramp-status" target="."
+        test="not(prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='provider-role']/@value = 'csp') or exists(prop[@ns='https://poamslayer.github.io/ns/cmmc' and @name='fedramp-status'])">
+        <message>A component whose provider-role is csp must record its fedramp-status.</message>
+      </expect>
+    </constraints>
+  </context>
+
+</metaschema-meta-constraints>

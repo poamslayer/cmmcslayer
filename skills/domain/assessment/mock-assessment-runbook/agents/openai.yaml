@@ -1,0 +1,3 @@
+interface:
+  display_name: "Mock assessment runbook"
+  short_description: "Gate the path, then run all 320 objectives for effectiveness"

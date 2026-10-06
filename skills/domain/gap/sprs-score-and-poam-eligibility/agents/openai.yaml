@@ -1,0 +1,3 @@
+interface:
+  display_name: "SPRS Score and POA&M Eligibility"
+  short_description: "Roll objectives up to a 110-point SPRS score and check the three gates that decide POA&M eligibility"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Printer and OT Asset Scoping"
+  short_description: "Force a documented printer category choice and place shop-floor OT as Specialized Assets"

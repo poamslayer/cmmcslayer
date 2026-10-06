@@ -1,0 +1,5 @@
+interface:
+  display_name: "To POA&M"
+  short_description: "Turn NOT MET findings into gated POA&M or OPA tickets"
+policy:
+  allow_implicit_invocation: false

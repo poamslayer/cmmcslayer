@@ -1,0 +1,3 @@
+interface:
+  display_name: "Logical Separation Test"
+  short_description: "Test a claimed VLAN, ACL, firewall, or DLP separation and return a verdict"

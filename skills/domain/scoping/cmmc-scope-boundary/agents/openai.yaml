@@ -1,0 +1,3 @@
+interface:
+  display_name: "CMMC Scope Boundary"
+  short_description: "Decide if an asset is in scope and which of the five categories it takes"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "C3PAO selection vetting"
+  short_description: "Vet an assessor or consultant past the marketplace badge"
