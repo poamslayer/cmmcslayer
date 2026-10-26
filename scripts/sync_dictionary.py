@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Write the control corpus into the public dictionary repository.
 
-The site at dictionary.poamslayer.com is a separate public repository whose
+The dictionary is a separate public repository, cmmc-dictionary, whose
 content directory is generated, never authored. This script is what generates
 it. See docs/adr/0003-dictionary-site-is-a-separate-public-repo.md.
 

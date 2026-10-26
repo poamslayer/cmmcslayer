@@ -516,7 +516,7 @@ model {
     }
 
     publishing = container 'Publishing scripts' {
-      description 'publish_snapshot.sh copies main without docs/specs into the public checkout. sync_dictionary.py copies control files to the dictionary site.'
+      description 'publish_snapshot.sh copies main without docs/specs into the public checkout. sync_dictionary.py copies control files to the dictionary repository.'
       metadata {
         code 'scripts/publish_snapshot.sh'
       }
@@ -567,8 +567,8 @@ model {
   publicRepo = external 'poamslayer/cmmcslayer (public)' {
     description 'A snapshot of main without docs/specs. Never edited by hand.'
   }
-  dictionary = external 'cmmc-dictionary / dictionary.poamslayer.com' {
-    description 'Public site serving the control files.'
+  dictionary = external 'cmmc-dictionary (public)' {
+    description 'Public repository holding the control files.'
   }
   federal = external 'Federal sources' {
     description 'eCFR, NIST, DoD CIO, CUI Registry. Every cited URL is in reference/authorities.md.'
