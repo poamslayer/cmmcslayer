@@ -50,13 +50,24 @@ The over-engineering list matters most for cost, because most of the money in th
 
 ## Install
 
+In Claude Code:
+
+```bash
+claude plugin marketplace add poamslayer/cmmcslayer
+claude plugin install cmmcslayer@poamslayer
+```
+
+For any other agent, or to get editable copies of the files:
+
 ```bash
 npx skills@latest add poamslayer/cmmcslayer
 ```
 
-Pick the skills you want. Make sure `setup-poamslayer-skills` is one of them.
+Pick the skills you want. Make sure `ask-poamslayer` and `setup-poamslayer-skills` are among them.
 
-Then, in an empty repo for the client:
+You can ask `/ask-poamslayer` a question straight away, with no setup. It names the skill for your situation, or says plainly when the question is outside what these skills cover.
+
+Before the first skill that keeps records, run setup once, in an empty repo for the client:
 
 ```
 /setup-poamslayer-skills

@@ -8,16 +8,40 @@ disable-model-invocation: true
 
 You do not remember every skill, so ask. Say where you are and what just arrived, and this router names the next skill.
 
+Before you say what a skill does, or recommend skipping a step, read that skill's SKILL.md. The summaries here are for orientation only.
+
 A **flow** is a path through the skills. Most engagements travel one **main flow**, and two **on-ramps** merge onto it. Everything else is standalone, or a vocabulary layer that runs underneath.
 
 ## Read the seat first
 
-The engagement repo's `CONTEXT.md` records the **seat** under a `## Seat` heading: `consultant` or `osc`. If there is no engagement repo yet, or no seat is recorded, tell the user to run `/setup-poamslayer-skills` first.
+The engagement repo's `CONTEXT.md` records the **seat** under a `## Seat` heading: `consultant` or `osc`. When no seat is recorded, use the OSC wording: plain words, and who in the company each step needs.
 
 **The seat is a tone switch, not a gate.** Both seats travel the same main flow and can reach every skill; the seat changes how an answer is worded and which Seat notes a skill leans on, never which skills are offered. Do not hide a skill from either seat.
 
 - **Consultant seat**: use the engagement vocabulary as is.
 - **OSC seat**: the operator is usually an IT lead who has never heard the word CUI said out loud. Say what each skill will ask them to do in plain words, and say who in the company each step needs (contracts, engineering, the shop floor, the owner). Mention `/wayfinder` only when the open decisions are too many for one sitting.
+
+## No engagement repo yet
+
+Routing never waits for setup. Answer every question with its route, whether or not an engagement repo exists.
+
+Setup is needed only before a skill that writes to the engagement repo: the main-flow stages, `scribe`, and the flows that leave files behind. When the route lands on one of those and there is no repo, name the route first, then say that `/setup-poamslayer-skills` comes before it, and why: the skill needs somewhere to keep what it learns.
+
+A quick question with no repo behind it is not a request to start an engagement. For "do we need Level 2 if nothing is marked CUI?", "is this document CUI?", "what satisfies 3.x.y?" or "do we have to do this?", route to the skill that answers it and let that skill answer from the facts in the message. `/grill-me` and `/research` never need a repo.
+
+## Outside what these skills cover
+
+Say so plainly instead of stretching a nearby route. These skills do not cover:
+
+- **Level 1**: its requirements and the Level 1 self-assessment. Never send a Level 1 company down the Level 2 path. If it is not sure it has no CUI, the question is "do we have CUI?", which routes to `/find-cui`.
+- **Level 3** and NIST SP 800-172.
+- **SPRS mechanics**: logins, CAGE and NCAGE codes, entering a score. Computing the score is covered by `sprs-score-and-poam-eligibility`.
+- **Contract vehicles**: which agreement to sign before sending CUI to a vendor. What the vendor needs once it holds CUI is covered by `flowdown-level-determination`.
+- **Comparing products or vendors**: GRC tools, MSPs, consultants. A product that will hold CUI still goes through gate 1 of `significant-change-determination`.
+- **Prices**: what an assessment, a consultant or a tool costs.
+- **Careers and exams**: CCP, CCA, the Cyber AB.
+
+When a question is outside, `/research` can still find the primary source and leave a cited file.
 
 ## The first question
 
@@ -133,4 +157,9 @@ Off the main flow entirely.
 | "New client" or "what do I ask in the first meeting?" | `/setup-poamslayer-skills` if there is no engagement repo, then `/find-cui`, starting at its intake step |
 | "What do we inventory?" | `cmmc-scope-boundary`, starting at its discovery walk |
 | "Too many open decisions" | `/wayfinder` |
+| "Am I overlooking something?" about a position they hold | `/grill-me` |
+| "We only need Level 1" or "do I need an SSP for Level 1?" | Outside: Level 1 is not covered; `/research`. If they are unsure there is no CUI, `/find-cui` |
+| "We need to send CUI to a vendor or an outside drafter" | `flowdown-level-determination`, then `supplier-cui-release-procedure` |
+| "Which GRC tool, MSP or consultant?" | Outside for the comparison; gate 1 of `significant-change-determination` for any product that will hold CUI |
+| "How do I enter our score in SPRS?" | Outside: SPRS mechanics are not covered; `/research` |
 | "Where do I start?" | The first stage of the main flow whose artifacts are missing |
