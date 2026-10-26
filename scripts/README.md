@@ -47,7 +47,7 @@ python3 scripts/check_record.py /tmp/poamslayer-cold-runs/<run> --baseline docs/
 
 ## Publishing the dictionary site
 
-**`sync_dictionary.py`** writes the 110 control files into a local clone of the public dictionary repository, which serves `dictionary.poamslayer.com`. See `docs/adr/0003-dictionary-site-is-a-separate-public-repo.md`.
+**`sync_dictionary.py`** writes the 110 control files into a local clone of the public dictionary repository, `cmmc-dictionary`. See `docs/adr/0003-dictionary-site-is-a-separate-public-repo.md`.
 
 ```sh
 python3 scripts/sync_dictionary.py           # write and check, touching no git

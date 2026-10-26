@@ -99,7 +99,7 @@ Whether something is CUI is a status question, so a skill answers it only from r
 
 The public repository is a snapshot of a private working repository, with no history. The planning documents and the private term lists the scrub check reads stay private, because they name real people.
 
-The control files already reach readers another way. `scripts/sync_dictionary.py` copies them one way into `cmmc-dictionary`, a separate public repository that serves `dictionary.poamslayer.com`, and strips `vault_sources` on the way. A deploy carries no git history, so the site did not have to wait for the gate. It does not settle publishing this repository either. See `docs/adr/0003-dictionary-site-is-a-separate-public-repo.md`.
+The control files already reach readers another way. `scripts/sync_dictionary.py` copies them one way into `cmmc-dictionary`, a separate public repository, and strips `vault_sources` on the way. That repository carries no history from this one, so it did not have to wait for the gate. It does not settle publishing this repository either. See `docs/adr/0003-dictionary-site-is-a-separate-public-repo.md`.
 
 ## Working on this repo
 
