@@ -1,0 +1,732 @@
+// cmmcslayer map: the map of record for this repo, at the C4 levels.
+// Colors follow color-key.md in the diagrams skill: fill = kind of thing, tag = status.
+// Check it with: npx -y likec4@1.59 validate docs/architecture
+// View it with:  npx -y likec4@1.59 start docs/architecture
+
+specification {
+  color key-amber #f9a825
+  color key-blue #1565c0
+  color key-teal #00897b
+  color key-green #2e7d32
+  color key-slate #546e7a
+
+  element person {
+    style {
+      shape person
+      color key-amber
+    }
+  }
+  element system {
+    style {
+      color key-blue
+    }
+  }
+  element container {
+    style {
+      color key-teal
+    }
+  }
+  element component {
+    style {
+      color key-green
+    }
+  }
+  element external {
+    style {
+      color key-slate
+    }
+  }
+
+  tag gap {
+    color #d32f2f
+  }
+  tag open {
+    color #ef6c00
+  }
+  tag idea {
+    color #9e9e9e
+  }
+
+  relationship inferred {
+    line dashed
+  }
+  relationship observed {
+    line dotted
+    color key-green
+  }
+}
+
+global {
+  styleGroup marks {
+    style element.tag = #idea {
+      border dashed
+      opacity 40%
+    }
+  }
+}
+
+model {
+
+  // People
+  consultant = person 'Consultant' {
+    description 'Runs CMMC engagements for clients. Gets the engagement vocabulary and Seat notes for running the work for someone else.'
+  }
+  osc = person 'OSC IT lead' {
+    description 'The company seeking certification. Gets plain language and, at each step, who in the company to ask.'
+  }
+  maintainer = person 'Maintainer (Arnold)' {
+    description 'Writes the skills from his judgment, runs the checks, publishes the snapshot.'
+  }
+
+  // The system: the skills repo
+  cmmcslayer = system 'cmmcslayer' {
+    description 'Agent skills that take a defense contractor through NIST SP 800-171 Rev 2 and a CMMC Level 2 assessment.'
+
+    router = container 'Router: ask-poamslayer' {
+      description 'Ask which skill or flow fits your situation in a NIST SP 800-171 or CMMC Level 2 engagement. A router over the skills in this repo.'
+      metadata {
+        code 'skills/flows/ask-poamslayer'
+      }
+    }
+
+    setup = container 'Setup' {
+      description 'Scaffold a CMMC Level 2 engagement repo: ask about the operator\'s role and record the seat, lay out CONTEXT.md, scope, the Markdown SSP and its view, evidence, policies, configure the tracker and triage labels, and check the regulatory status brief is current. Run once in an empty client repo before any other skill.'
+      metadata {
+        code 'skills/setup/setup-poamslayer-skills'
+      }
+      scaffold = component 'scaffold.py' {
+        description 'Creates CONTEXT.md, ssp/, scope/, evidence/, policies/, docs/.'
+        metadata {
+          code 'skills/setup/setup-poamslayer-skills/scaffold.py'
+        }
+      }
+      statusCheck = component 'status-check.py' {
+        description 'Reports where the engagement stands.'
+        metadata {
+          code 'skills/setup/setup-poamslayer-skills/status-check.py'
+        }
+      }
+    }
+
+    flows = container 'Flow skills' {
+      description 'The main flow: find-cui -> scope -> gap -> remediate -> document -> evidence -> mock -> assessment -> closeout -> monitoring. Each box shows the skill description from its SKILL.md.'
+      metadata {
+        code 'skills/flows'
+      }
+      audit = component 'audit' {
+        description 'Assess one requirement against the current state of the engagement repo and report every NIST SP 800-171A objective as MET or NOT MET with its letter and the missing evidence. Use when the operator asks whether a requirement is met, when remediate needs to know whether a ticket can close, and after every fix.'
+        metadata {
+          code 'skills/flows/audit'
+        }
+      }
+      fDomainModeling = component 'domain-modeling' {
+        description 'Build and sharpen a project\'s domain model. Use when discussing engagement terminology, writing or editing a CONTEXT.md, or recording or editing an ADR.'
+        metadata {
+          code 'skills/flows/domain-modeling'
+        }
+      }
+      findCui = component 'find-cui' {
+        description 'Find out whether an organization has CUI and where it goes. Take the intake facts from the contracts first, train, interview by role with IT last, determine each item against the ownership-first ruleset, and map the result into a data flow the scope can be drawn from.'
+        metadata {
+          code 'skills/flows/find-cui'
+        }
+      }
+      fGrillMe = component 'grill-me' {
+        description 'A relentless interview to sharpen a plan, a scope decision, or a position you will defend at assessment.'
+        metadata {
+          code 'skills/flows/grill-me'
+        }
+      }
+      fGrillWithDocs = component 'grill-with-docs' {
+        description 'A relentless interview to sharpen a plan, a scope decision, or a position you will defend at assessment, which also creates docs (ADRs and glossary) as we go.'
+        metadata {
+          code 'skills/flows/grill-with-docs'
+        }
+      }
+      fGrilling = component 'grilling' {
+        description 'Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any \'grill\' trigger phrases.'
+        metadata {
+          code 'skills/flows/grilling'
+        }
+      }
+      fHandoff = component 'handoff' {
+        description 'Compact the current conversation into a handoff document for another agent to pick up.'
+        metadata {
+          code 'skills/flows/handoff'
+        }
+      }
+      remediate = component 'remediate' {
+        description 'Drive one POA&M or OPA ticket to closure. Make the fix, run the audit, and close the ticket only when every assessment objective for that requirement is MET.'
+        metadata {
+          code 'skills/flows/remediate'
+        }
+      }
+      fResearch = component 'research' {
+        description 'Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo. Use when the user wants a topic researched, regulatory text, guide entries, or vendor facts gathered, or reading legwork delegated to a background agent.'
+        metadata {
+          code 'skills/flows/research'
+        }
+      }
+      scribe = component 'scribe' {
+        description 'Record a decision in the engagement\'s SSP, the Markdown files under `ssp/`. The only skill that ever changes them. Other skills call it with what was decided, in domain terms; scribe edits the files, runs the check, keeps the change only if it passes, commits it, and re-renders the read-only view.'
+        metadata {
+          code 'skills/flows/scribe'
+        }
+      }
+      sspLint = component 'ssp-lint' {
+        description 'Review the SSP on two axes: house style (does every objective carry a statement in the required form?) and evidence (does every claim match the supporting document and the evidence folder?). Runs both as parallel subagents and reports them side by side.'
+        metadata {
+          code 'skills/flows/ssp-lint'
+        }
+      }
+      toPoam = component 'to-poam' {
+        description 'Turn every NOT MET objective from an audit into a ticket on the engagement tracker, routed to a POA&M or an Operational Plan of Action, gated against the three POA&M conditions and the eligible list before anything is written down.'
+        metadata {
+          code 'skills/flows/to-poam'
+        }
+      }
+      fToQuestionnaire = component 'to-questionnaire' {
+        description 'Turn a decision you can\'t fully answer into a questionnaire for someone else to fill in: the contracts manager, the shop lead, the MSP, the prime\'s buyer.'
+        metadata {
+          code 'skills/flows/to-questionnaire'
+        }
+      }
+      toSsp = component 'to-ssp' {
+        description 'Turn the grilling, the scoping record, and the recorded decisions into the SSP\'s conformity statements, one per assessment objective and component, recorded in the `ssp/` files through scribe. No interview, just synthesis of what the engagement has already settled.'
+        metadata {
+          code 'skills/flows/to-ssp'
+        }
+      }
+      fTriage = component 'triage' {
+        description 'Move findings the operator did not write, such as a mock assessment report, a prime\'s questionnaire, or a readiness review, through the five triage labels into agent-ready tickets on the engagement tracker.'
+        metadata {
+          code 'skills/flows/triage'
+        }
+      }
+      fWaitWhat = component 'wait-what' {
+        description 'Stop. That last message did not land: re-pitch it.'
+        metadata {
+          code 'skills/flows/wait-what'
+        }
+      }
+      fWayfinder = component 'wayfinder' {
+        description 'Chart an engagement\'s contested decisions as a map of decision tickets on the engagement tracker, and resolve them one at a time until the way to a defensible scope and SSP is clear.'
+        metadata {
+          code 'skills/flows/wayfinder'
+        }
+      }
+      fWizard = component 'wizard' {
+        description 'Generate an interactive bash wizard that walks a human through steps only they can perform. Use when configuring a tenant setting, enabling a security control in a vendor portal, provisioning accounts or credentials, walking an unfamiliar third-party dashboard, or running a one-off migration or cutover. Don\'t invoke this for steps the agent can perform itself.'
+        metadata {
+          code 'skills/flows/wizard'
+        }
+      }
+      fWritingForAgents = component 'writing-for-agents' {
+        description 'Writing documents for agents. Use when creating or editing skills, or modifying AGENTS.md or CLAUDE.md.'
+        metadata {
+          code 'skills/flows/writing-for-agents'
+        }
+      }
+    }
+
+    domain = container 'Domain skills' {
+      description 'The judgment: what assessors accepted, rejected, and what is over-engineering. Grouped by engagement phase. Each box shows the skill description from its SKILL.md.'
+      metadata {
+        code 'skills/domain'
+      }
+      dCui = component 'CUI' {
+        description 'Domain skills for the CUI phase.'
+        metadata {
+          code 'skills/domain/cui'
+        }
+        sCuiDataFlowMapping = component 'cui-data-flow-mapping' {
+          description 'Map how CUI actually moves through the company before any asset gets categorized. Runs the train-then-interview-then-map-then-assets sequence, asks the seven non-technical interview questions plus destruction, interviews by business role with IT last, draws all four flow classes including paper and sneakernet, and produces the data flow diagram at the organization, business-process, and system levels. Use at the start of a scoping engagement, or whenever the asset inventory and the SSP disagree about where CUI lives.'
+          metadata {
+            code 'skills/domain/cui/cui-data-flow-mapping'
+          }
+        }
+        sCuiDeterminationWorkflow = component 'cui-determination-workflow' {
+          description 'Determine whether a piece of information is Controlled Unclassified Information (CUI), using an ownership-first ruleset. Checks ownership, then contract origin, then controlling authority, in that order, and tests a document the company created from CUI on its content, never its ancestry. Applies the Copy A / Copy B mechanic, reads the contract\'s clause family, treats the CUI Registry as an eligibility list rather than an automatic-status list, and pushes unclear markings upstream in writing. Use whenever the operator or another skill asks "is this CUI?" about a document, a data field, or a whole data type.'
+          metadata {
+            code 'skills/domain/cui/cui-determination-workflow'
+          }
+        }
+        sCuiMarkingCheck = component 'cui-marking-check' {
+          description 'Check a document, email, slide deck, or spreadsheet for correct CUI marking, catch the four wrong banner formats, build a compliant four-line designation block, apply the CTI overlay with the right Distribution Statement, and decide what a subcontractor is allowed to mark on its own output. Use before a marked document leaves the building or when reviewing a document a customer or prime sent in.'
+          metadata {
+            code 'skills/domain/cui/cui-marking-check'
+          }
+        }
+        sCuiReUseTriage = component 'cui-re-use-triage' {
+          description 'Walk the documents a company creates while using CUI it received, and separate the CUI content each one re-uses from the company\'s own work, then send every document to `cui-determination-workflow` for its status. Covers any industry, with a build-to-print machine shop as the worked example, the export chain for g-code, and intake and outbound packages to suppliers. Use when a contractor asks whether its own sketches, travelers, inspection reports, NC programs, analysis reports, code, or briefings are CUI because they were made from a customer\'s CUI.'
+          metadata {
+            code 'skills/domain/cui/cui-re-use-triage'
+          }
+        }
+        sExportControlOverlay = component 'export-control-overlay' {
+          description 'Work out how ITAR and EAR sit on top of a CUI determination, catch the reflex that export-controlled data is automatically CUI, apply the deemed-export rule to foreign nationals and foreign-staffed service providers, and decide where classification authority actually sits. Use whenever technical data, a foreign national, an MSSP or EDR vendor, or a cloud region enters the conversation.'
+          metadata {
+            code 'skills/domain/cui/export-control-overlay'
+          }
+        }
+        sFlowdownLevelDetermination = component 'flowdown-level-determination' {
+          description 'Work out what CMMC level a subcontractor actually needs, split clause substance from the certification requirement, apply the paper-only rule, and push back on an overmarked package before it flows downstream. Use when a prime is flowing CMMC requirements down a supply chain, or when a subcontractor is asking what level applies to it.'
+          metadata {
+            code 'skills/domain/cui/flowdown-level-determination'
+          }
+        }
+      }
+      dScoping = component 'Scoping' {
+        description 'Domain skills for the Scoping phase.'
+        metadata {
+          code 'skills/domain/scoping'
+        }
+        sCmmcBoundaryDiagram = component 'cmmc-boundary-diagram' {
+          description 'Draw the network diagram of the CMMC Level 2 Assessment Scope in draw.io, color-coded by asset category, from the assets and categories already recorded in the SSP and from the environment or firewall config the operator describes. Use whenever an operator asks for the network diagram, the boundary diagram, or the scoping diagram, or after cmmc-scope-boundary has placed the assets.'
+          metadata {
+            code 'skills/domain/scoping/cmmc-boundary-diagram'
+          }
+        }
+        sCmmcScopeBoundary = component 'cmmc-scope-boundary' {
+          description 'Discover the assets with a nine-area walk of the site, then decide whether each one sits inside the CMMC Level 2 Assessment Scope, which of the five asset categories it belongs to, and what documentation that category requires, recording every asset and category in the SSP through scribe. Use whenever an operator asks "is this asset in scope", asks what to inventory, or is building the asset inventory and network diagram before an assessment.'
+          metadata {
+            code 'skills/domain/scoping/cmmc-scope-boundary'
+          }
+        }
+        sEnclaveOrEnterpriseDecision = component 'enclave-or-enterprise-decision' {
+          description 'Choose the CMMC architecture before money is spent. Refuses the headcount rule of thumb, decides on the business case, lays out the five architectures with their tradeoffs, draws an enclave around controlled customer technical data, handles an enclave that holds no CUI, warns about the nonclave, and designs for three years of contracts. Use when an organization asks "enclave or whole company?", has Level 2 flowed down without clear CUI, or is about to buy a tenant, VDI, or segmentation project.'
+          metadata {
+            code 'skills/domain/scoping/enclave-or-enterprise-decision'
+          }
+        }
+        sEndpointAndVdiScoping = component 'endpoint-and-vdi-scoping' {
+          description 'Decide whether a laptop, thin client, home network connection, or personal device is in the CMMC Assessment Scope, and which test decided it. Covers the VDI keyboard/video/mouse carve-out, the hops test for remote access, VPN documentation under 3.1.12, cloud-native inheritance of the physical protection family, personal-device RDP, and the unresolved wireless positions. Records each endpoint and its category in the SSP through scribe. Use whenever an operator asks whether a specific endpoint, remote connection, or device needs to be assessed.'
+          metadata {
+            code 'skills/domain/scoping/endpoint-and-vdi-scoping'
+          }
+        }
+        sEspAndMspScoping = component 'esp-and-msp-scoping' {
+          description 'Place an MSP, MSSP, RMM, backup provider, SOC, or SaaS vendor in the CMMC Assessment Scope. Runs the account test first, finds the providers behind the provider, scopes remote tooling by feature, applies the CSP versus ESP fork, and records each provider with its role and FedRAMP status, and its tools as assets, in the SSP through scribe, which generates the responsibility matrix. Use whenever an outside party has access to, or holds data from, the environment.'
+          metadata {
+            code 'skills/domain/scoping/esp-and-msp-scoping'
+          }
+        }
+        sLogicalSeparationTest = component 'logical-separation-test' {
+          description 'Test whether a claimed network segment, print path, or asset separation actually removes an asset from CUI reach, or whether it only reduces the odds of use. Returns a verdict of not separated, isolation, or controlled access, with every allow-list entry judged on what it could carry. Use whenever an OSC claims a VLAN, ACL, firewall rule, or DLP policy takes an asset out of scope.'
+          metadata {
+            code 'skills/domain/scoping/logical-separation-test'
+          }
+        }
+        sPrinterAndOtAssetScoping = component 'printer-and-ot-asset-scoping' {
+          description 'Categorize printers, multifunction devices, print servers, CNC controllers, coordinate measuring machines, and PLCs for the CMMC Assessment Scope. Forces a documented choice among the three contested printer positions, places shop-floor controllers as Specialized Assets with their kind, records each device, its category, and the real attributes it needs in the SSP through scribe, and flags the Rev 3 FIPS problem for networked print devices. Use whenever an operator is categorizing printers, MFPs, or operational technology on a shop floor.'
+          metadata {
+            code 'skills/domain/scoping/printer-and-ot-asset-scoping'
+          }
+        }
+        sSignificantChangeDetermination = component 'significant-change-determination' {
+          description 'Decide whether a proposed change to a certified CMMC environment is a significant change, using four gates, and produce the determination memo and execution checklist the Affirming Official signs. Use before adding, swapping, or migrating any tool, provider, site, operating system, or cloud service in a certified scope.'
+          metadata {
+            code 'skills/domain/scoping/significant-change-determination'
+          }
+        }
+      }
+      dGap = component 'Gap' {
+        description 'Domain skills for the Gap phase.'
+        metadata {
+          code 'skills/domain/gap'
+        }
+        sControlEvidenceLookup = component 'control-evidence-lookup' {
+          description 'Answer "what satisfies 3.x.y" or "will this evidence pass" for any NIST SP 800-171 Rev 2 requirement. Returns what assessors have accepted, what they have rejected, what is over-engineering, the open edge cases, and evidence examples, with assessor disagreement preserved and thin requirements marked low confidence. Use whenever a requirement id is named and the question is about the bar.'
+          metadata {
+            code 'skills/domain/gap/control-evidence-lookup'
+          }
+        }
+        sNormativeRequirementTest = component 'normative-requirement-test' {
+          description 'Decide whether a cited passage of the CMMC Level 2 Assessment Guide can actually fail an assessment, by sorting it into the two normative sections or the three informative ones. Use whenever a vendor, consultant, assessor, or forum thread treats Discussion text, an Example, or a Potential Assessment Consideration as if it were a requirement.'
+          metadata {
+            code 'skills/domain/gap/normative-requirement-test'
+          }
+        }
+        sOverEngineeringGuard = component 'over-engineering-guard' {
+          description 'Test whether a proposed control is required by an assessment objective, optional and worth the spend anyway, or over-engineering that a cheaper alternative already satisfies. Use whenever a consultant, vendor, or an OSC\'s own team proposes a purchase or a build that costs money and nobody has pointed to the objective that requires it.'
+          metadata {
+            code 'skills/domain/gap/over-engineering-guard'
+          }
+        }
+        sRequirementApplicabilityMatrix = component 'requirement-applicability-matrix' {
+          description 'Decide which of the 110 NIST SP 800-171 Rev 2 requirements bear on each in-scope component, separate "address" from "implement", record each not applicable and alternative status with its reason in the SSP through scribe, and keep a requirements traceability matrix per component. Use after scope is set and before SSP writing, whenever someone assumes "in scope" means "implement all 110 on every asset".'
+          metadata {
+            code 'skills/domain/gap/requirement-applicability-matrix'
+          }
+        }
+        sSprsScoreAndPoamEligibility = component 'sprs-score-and-poam-eligibility' {
+          description 'Roll 320 assessment objectives up to a 110-requirement SPRS score, apply the 5/3/1 point table and the two adjustable requirements, and decide which NOT MET requirements can sit on a POA&M under the three Level 2 gates. Use whenever computing a score, building a POA&M, or checking whether a Conditional CMMC Status is achievable.'
+          metadata {
+            code 'skills/domain/gap/sprs-score-and-poam-eligibility'
+          }
+        }
+      }
+      dM365 = component 'Microsoft 365' {
+        description 'Domain skills for the Microsoft 365 phase.'
+        metadata {
+          code 'skills/domain/m365'
+        }
+        sExchangeDlpEnclavePattern = component 'exchange-dlp-enclave-pattern' {
+          description 'Decide the scoping outcome for an organization that sends CUI by email inside a GCC High (or equivalent) Microsoft 365 tenant and wants to keep most mailbox users out of assessment scope. Compares the three Exchange Online architectures, grounds the Out-of-Scope claim in the Scoping Guide\'s logical separation test, lists exactly what stays in scope, and lists the evidence an assessor will ask for. Use when a client licenses Exchange Online in a CUI-capable tenant and asks whether every licensed user becomes in scope.'
+          metadata {
+            code 'skills/domain/m365/exchange-dlp-enclave-pattern'
+          }
+        }
+        sFipsCryptoScoping = component 'fips-crypto-scoping' {
+          description 'Decide whether a specific device or software layer needs FIPS-validated cryptography, and whether the module it uses actually qualifies. Maps the CUI data flow to the real encryption and decryption endpoints, sorts each network device into CUI Asset, Security Protection Asset, or out of scope with a three-question tree, stops that logic at cloud storage, produces a per-device verdict, and records each network device the tree clears as an Out-of-Scope Asset, with its reason, in the SSP through scribe. Use whenever a client, vendor, or MSP claims a device "needs FIPS" or "is FIPS compliant," or before buying anything sold as a FIPS solution.'
+          metadata {
+            code 'skills/domain/m365/fips-crypto-scoping'
+          }
+        }
+        sGccHighDecision = component 'gcc-high-decision' {
+          description 'Decide whether a client needs a GCC High tenant or can stay on Commercial or GCC, and record why. Runs the export-control question first, checks foreign ownership and control, catches the brand-name trap on named vendor products, prices the decision honestly, lists what breaks in GCC High, and applies the FedRAMP Moderate Equivalency test. Use when choosing a Microsoft 365 tenant type, or when a client asks "do we need GCC High."'
+          metadata {
+            code 'skills/domain/m365/gcc-high-decision'
+          }
+        }
+      }
+      dSspPoam = component 'SSP and POA&M' {
+        description 'Domain skills for the SSP and POA&M phase.'
+        metadata {
+          code 'skills/domain/ssp-poam'
+        }
+        sPoamOrOpaRouter = component 'poam-or-opa-router' {
+          description 'Decide whether a deficiency belongs on a POA&M, on an Operational Plan of Action, in the SSP as an enduring exception, or nowhere at all. Use whenever someone reaches for a tracker after finding a gap.'
+          metadata {
+            code 'skills/domain/ssp-poam/poam-or-opa-router'
+          }
+        }
+        sSspStatementWriter = component 'ssp-statement-writer' {
+          description 'Write the conformity statement for each assessment objective in the form an assessor can score without hunting, show it to the operator, and record it where the engagement keeps its SSP, the `ssp/` files through scribe or a GRC platform such as IntelliGRC. Use when drafting or repairing SSP text, and whenever a fix has to be written down.'
+          metadata {
+            code 'skills/domain/ssp-poam/ssp-statement-writer'
+          }
+        }
+      }
+      dPolicy = component 'Policy' {
+        description 'Domain skills for the Policy phase.'
+        metadata {
+          code 'skills/domain/policy'
+        }
+        sPolicyAfterProcedureSequencing = component 'policy-after-procedure-sequencing' {
+          description 'Decide what order to write CUI policy and procedure documentation in, and what each document has to contain. Enforces flow-first sequencing, a document discovery pass before any drafting, the policy/standard/procedure hierarchy, the power of definition, and the annual periodicity floor. Use when an engagement opens with "we need policies," or when a client hands over a purchased policy template before any process work has happened.'
+          metadata {
+            code 'skills/domain/policy/policy-after-procedure-sequencing'
+          }
+        }
+        sSupplierCuiReleaseProcedure = component 'supplier-cui-release-procedure' {
+          description 'Decide whether a manufacturer may send a package containing CUI to an outside supplier, finisher, coater, or inspection lab, which of three release paths applies, and what has to be recorded before the package leaves the building. Use this before any outbound shipment or transmittal to a subcontractor that might carry CUI, or when writing the release procedure a supplier-facing policy needs to reference against 3.1.3.'
+          metadata {
+            code 'skills/domain/policy/supplier-cui-release-procedure'
+          }
+        }
+      }
+      dEvidence = component 'Evidence' {
+        description 'Domain skills for the Evidence phase.'
+        metadata {
+          code 'skills/domain/evidence'
+        }
+        sEvidencePackageBuilder = component 'evidence-package-builder' {
+          description 'Build the evidence package an assessor will actually check, per assessment objective rather than per requirement, plus the recurring monitoring calendar that keeps that evidence current. Use when preparing for an assessment, or when the operator asks what to show for a requirement.'
+          metadata {
+            code 'skills/domain/evidence/evidence-package-builder'
+          }
+        }
+      }
+      dAssessment = component 'Assessment' {
+        description 'Domain skills for the Assessment phase.'
+        metadata {
+          code 'skills/domain/assessment'
+        }
+        sC3paoSelectionVetting = component 'c3pao-selection-vetting' {
+          description 'Vet a C3PAO, Registered Practitioner Organization, or consultant before signing, on past performance and technical literacy rather than the marketplace badge alone, and build the pre-engagement question list from the requirements assessors read differently. Use before selecting a certification assessor or a consultant, or before deciding to switch one mid-engagement.'
+          metadata {
+            code 'skills/domain/assessment/c3pao-selection-vetting'
+          }
+        }
+        sMockAssessmentRunbook = component 'mock-assessment-runbook' {
+          description 'Decide between a gap assessment, a mock assessment, and booking the real certification assessment, gate the choice on prerequisites, and run the mock against all 320 assessment objectives for effectiveness rather than compliance. Use when an organization is choosing its pre-certification assessment path, or asks whether it is ready to book the real one.'
+          metadata {
+            code 'skills/domain/assessment/mock-assessment-runbook'
+          }
+        }
+        sTopFailedRequirementsDrill = component 'top-failed-requirements-drill' {
+          description 'Drill the small set of requirements that most often turn up NOT MET at assessment, with the specific reason each one fails and a scenario-based test for incident response. Use when an OSC is within a few months of an assessment and wants the highest-yield preparation, not a full 110-requirement review.'
+          metadata {
+            code 'skills/domain/assessment/top-failed-requirements-drill'
+          }
+        }
+      }
+      dEngagement = component 'Engagement' {
+        description 'Domain skills for the Engagement phase.'
+        metadata {
+          code 'skills/domain/engagement'
+        }
+        sCmmcRegulatoryStatusBrief = component 'cmmc-regulatory-status-brief' {
+          description 'State what CMMC and NIST SP 800-171 obligations are actually in force today, with an as-of date, so nobody advises a client from a stale picture. Use when a client asks whether CMMC is still happening, which revision applies, or whether to pause an assessment.'
+          metadata {
+            code 'skills/domain/engagement/cmmc-regulatory-status-brief'
+          }
+        }
+      }
+    }
+
+    reference = container 'Reference' {
+      description '800-171 requirements JSON, authorities register with tiers, 32 CFR 170, DFARS 7021, CUI Registry, DoD issuances.'
+      metadata {
+        code 'reference'
+      }
+    }
+
+    checks = container 'Checks: verify.sh' {
+      description 'Skill validator, plugin manifest, control files, router links, authorities, scribe and setup tests, fixture record, scrub, em dashes. --publish adds the publish gates.'
+      metadata {
+        code 'scripts/verify.sh'
+      }
+      scrub = component 'scrub_check.py' {
+        description 'Fails any file that names a private person or community.'
+        metadata {
+          code 'scripts/scrub_check.py'
+        }
+      }
+      publishSafety = component 'check_publish_safety.py' {
+        description 'Checks every blob in history for blocked terms.'
+        metadata {
+          code 'scripts/check_publish_safety.py'
+        }
+      }
+      coldRun = component 'cold_run.py' {
+        description 'Runs the skills on the fixture with no context and grades the result.'
+        metadata {
+          code 'scripts/cold_run.py'
+        }
+      }
+    }
+
+    fixture = container 'Fixture' {
+      description 'A fictional machine shop with deliberate mistakes, known answers, and a grader rubric. The test bed.'
+      metadata {
+        code 'docs/fixture'
+      }
+    }
+
+    publishing = container 'Publishing scripts' {
+      description 'publish_snapshot.sh copies main without docs/specs into the public checkout. sync_dictionary.py copies control files to the dictionary site.'
+      metadata {
+        code 'scripts/publish_snapshot.sh'
+      }
+    }
+
+    specs = container 'docs/specs (private only)' {
+      description 'The original spec and the vault inventory. Name real people, so they never leave the private repo.'
+      metadata {
+        code 'docs/specs'
+      }
+    }
+  }
+
+  // What setup creates in each client's own repo
+  engagement = system 'Engagement repo (one per client)' {
+    description 'The client repo setup scaffolds. The skills read and write here.'
+
+    contextFile = container 'CONTEXT.md' {
+      description 'The seat (consultant or OSC) and the engagement vocabulary.'
+    }
+    ssp = container 'ssp/ (the record)' {
+      description 'system.md, components/, and one file per requirement with statements in YAML frontmatter. Only scribe writes it.'
+    }
+    rendered = container 'view/' {
+      description 'Rendered SSP pages for people. Nobody edits it, no skill reads it.'
+    }
+    scope = container 'scope/' {
+      description 'Interviews, data flow, and open-items.md for anything not yet confirmed.'
+    }
+    evidence = container 'evidence/' {
+      description 'One folder per requirement.'
+    }
+    policies = container 'policies/' {
+      description 'Policies and procedures.'
+    }
+  }
+
+  // Outside the repo
+  agent = external 'Coding agent (Claude Code)' {
+    description 'Loads the skills, installed as the cmmcslayer Claude Code plugin or with npx skills add poamslayer/cmmcslayer.'
+  }
+  vault = external 'cmmc-vault (private wiki)' {
+    description 'The practitioner wiki the skills were written from. Private.'
+  }
+  termLists = external 'Private term lists' {
+    description '~/.config/cmmcslayer/scrub: blocklist and warnlist. Kept out of the repo because they name people.'
+  }
+  publicRepo = external 'poamslayer/cmmcslayer (public)' {
+    description 'A snapshot of main without docs/specs. Never edited by hand.'
+  }
+  dictionary = external 'cmmc-dictionary / dictionary.poamslayer.com' {
+    description 'Public site serving the control files.'
+  }
+  federal = external 'Federal sources' {
+    description 'eCFR, NIST, DoD CIO, CUI Registry. Every cited URL is in reference/authorities.md.'
+  }
+
+  // People to the system
+  consultant -> agent 'runs the skills in'
+  osc -> agent 'runs the skills in'
+  agent -> router 'starts at'
+  agent -> setup 'installs and runs'
+  agent -> publicRepo 'installs the plugin from'
+  maintainer -> checks 'runs before every commit'
+  maintainer -> publishing 'runs to publish'
+
+  // Inside the skills repo
+  router -> flows 'names the next skill'
+  setup -> contextFile 'records the seat in'
+  scaffold -> ssp 'creates'
+  scaffold -> scope 'creates'
+  scaffold -> evidence 'creates'
+  scaffold -> policies 'creates'
+  findCui -> scope 'writes interviews and data flow to'
+  audit -> ssp 'reads'
+  audit -> evidence 'reads'
+  remediate -> audit 'closes a ticket only after'
+  toSsp -> scribe 'records statements through'
+  sspLint -> ssp 'reads'
+  scribe -> ssp 'is the only writer of'
+  scribe -> rendered 'renders'
+  domain -> reference 'cites'
+  dEvidence -> evidence 'builds packages in'
+  reference -> federal 'cites'
+  scrub -> termLists 'reads'
+  scrub -> vault 'checks for verbatim text against'
+  publishSafety -> termLists 'reads'
+  coldRun -> fixture 'runs the skills against'
+  checks -> fixture 'checks the record in'
+  publishing -> publicRepo 'writes a snapshot to'
+  publishing -> dictionary 'syncs control files to'
+  domain -[inferred]-> vault 'written from'
+
+  // Skill-level links: a flow skill a flow skill's SKILL.md names this skill (by text, so it may be a pointer rather than a call)
+  audit -> sControlEvidenceLookup 'names'
+  audit -> sOverEngineeringGuard 'names'
+  audit -> remediate 'names'
+  audit -> toPoam 'names'
+  findCui -> sCuiDataFlowMapping 'names'
+  findCui -> sCuiDeterminationWorkflow 'names'
+  findCui -> sCuiReUseTriage 'names'
+  findCui -> sExportControlOverlay 'names'
+  findCui -> sFlowdownLevelDetermination 'names'
+  findCui -> sCmmcScopeBoundary 'names'
+  findCui -> sEspAndMspScoping 'names'
+  findCui -> sSprsScoreAndPoamEligibility 'names'
+  remediate -> sControlEvidenceLookup 'names'
+  remediate -> sOverEngineeringGuard 'names'
+  remediate -> sPoamOrOpaRouter 'names'
+  remediate -> sSspStatementWriter 'names'
+  remediate -> scribe 'names'
+  sspLint -> sSspStatementWriter 'names'
+  toPoam -> sSprsScoreAndPoamEligibility 'names'
+  toPoam -> sPoamOrOpaRouter 'names'
+  toPoam -> sSspStatementWriter 'names'
+  toSsp -> sCmmcScopeBoundary 'names'
+  toSsp -> sEspAndMspScoping 'names'
+  toSsp -> sRequirementApplicabilityMatrix 'names'
+  toSsp -> sSspStatementWriter 'names'
+  fTriage -> sControlEvidenceLookup 'names'
+  fTriage -> sOverEngineeringGuard 'names'
+  fWayfinder -> sCuiReUseTriage 'names'
+  fWayfinder -> sExportControlOverlay 'names'
+  fWayfinder -> sFlowdownLevelDetermination 'names'
+  fWayfinder -> sCmmcScopeBoundary 'names'
+  fWayfinder -> sEnclaveOrEnterpriseDecision 'names'
+  fWayfinder -> sEndpointAndVdiScoping 'names'
+  fWayfinder -> sEspAndMspScoping 'names'
+  fWayfinder -> sLogicalSeparationTest 'names'
+  fWayfinder -> sPrinterAndOtAssetScoping 'names'
+  fWayfinder -> sGccHighDecision 'names'
+  fWayfinder -> toSsp 'names'
+}
+
+views {
+  global style marks
+
+  view index {
+    title 'System context: who uses cmmcslayer and what it touches'
+    description 'Click a blue box to zoom in. Colors: color-key.md in the diagrams skill.'
+    include *
+  }
+
+  view skills of cmmcslayer {
+    title 'Inside the skills repo'
+    include *
+  }
+
+  view flow of flows {
+    title 'Flow skills and what they call'
+    include *, flows.* -> domain.**, flows.* -> engagement.*
+  }
+
+  view domainView of domain {
+    title 'Domain skills'
+    include *
+  }
+
+  view engagementView of engagement {
+    title 'The engagement repo each client gets'
+    include *
+  }
+
+  view checksView of checks {
+    title 'Checks and publishing'
+    include *, publishing, publicRepo, dictionary, termLists, vault
+  }
+
+  view phaseCui of dCui {
+    title 'Domain skills: CUI'
+    include *
+  }
+
+  view phaseScoping of dScoping {
+    title 'Domain skills: Scoping'
+    include *
+  }
+
+  view phaseGap of dGap {
+    title 'Domain skills: Gap'
+    include *
+  }
+
+  view phaseM365 of dM365 {
+    title 'Domain skills: Microsoft 365'
+    include *
+  }
+
+  view phaseSspPoam of dSspPoam {
+    title 'Domain skills: SSP and POA&M'
+    include *
+  }
+
+  view phasePolicy of dPolicy {
+    title 'Domain skills: Policy'
+    include *
+  }
+
+  view phaseEvidence of dEvidence {
+    title 'Domain skills: Evidence'
+    include *
+  }
+
+  view phaseAssessment of dAssessment {
+    title 'Domain skills: Assessment'
+    include *
+  }
+
+  view phaseEngagement of dEngagement {
+    title 'Domain skills: Engagement'
+    include *
+  }
+}

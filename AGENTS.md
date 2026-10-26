@@ -13,15 +13,19 @@ Two layers of agent skills for taking a defense contractor through NIST SP 800-1
 
 Every skill is one folder with a `SKILL.md` in the shape mattpocock/skills uses, so the repo installs with `npx skills add` now and as a Claude Code plugin later.
 
+## Keep the map current
+
+`docs/architecture/cmmcslayer.c4` is the map of record, a LikeC4 map. Use the `diagrams` skill to edit it. Update it in the same change as any change that adds, removes, or moves a skill folder under `skills/`, a script under `scripts/`, a folder setup scaffolds in the engagement repo, or a place the repo publishes to. Check it with `npx -y likec4@1.59 validate docs/architecture`, and view it with `npx -y likec4@1.59 start docs/architecture`.
+
 ## Rules for editing
 
 - No em dashes anywhere in prose. Rewrite the sentence. Two exceptions: `reference/`, which reproduces outside material verbatim and keeps the source's own punctuation, and `docs/specs/` (private repository only), which holds the spec and the vault inventory as they were written, because editing them would falsify the record of what this build was specified from.
 - Domain skills carry `vault_sources` in frontmatter. Control files carry `requirement`, `family`, `confidence`, `as_of`, `vault_sources`.
 - Every cited URL is in `reference/authorities.md` first, with its tier. Read `docs/adr/0004-authority-tiers.md` before citing anything: the tier limits what a source may support, and a CUI status rule needs Tier 1 or Tier 2. `verify.sh` fails on a citation missing from the register.
 - Run `python3 scripts/check_links.py` when you add or change citations. It needs network access, so it is not in `verify.sh`. A citation that does not resolve is worse than a missing one: it looks like evidence and is not.
-- Run `bash scripts/verify.sh` before committing. `verify.sh` needs only Python 3. The scrub check reads private term lists from `~/.config/cmmcslayer/scrub/` (or `CMMCSLAYER_SCRUB_DIR`) and skips the name check when they are missing. The public repository is a snapshot of `main` without `docs/specs/`, made with `bash scripts/publish_snapshot.sh`; run `bash scripts/verify.sh --publish` in the snapshot before pushing it. `verify.sh` runs the skill validator, the control file schema check, the router link check, the authorities register check, the scribe check and render test, the setup scaffold test, the fixture record check, the scrub check, and the em dash check. `--strict` additionally requires every skill the router names to exist, and is the release gate.
+- Run `bash scripts/verify.sh` before committing. `verify.sh` needs only Python 3. The scrub check reads private term lists from `~/.config/cmmcslayer/scrub/` (or `CMMCSLAYER_SCRUB_DIR`) and skips the name check when they are missing. The public repository is a snapshot of `main` without `docs/specs/`, made with `bash scripts/publish_snapshot.sh`; run `bash scripts/verify.sh --publish` in the snapshot before pushing it. `verify.sh` runs the skill validator, the plugin manifest check, the control file schema check, the router link check, the authorities register check, the scribe check and render test, the setup scaffold test, the fixture record check, the scrub check, and the em dash check. `--strict` additionally requires every skill the router names to exist, and is the release gate.
 - Dependencies between skills are written as "call the Skill tool with `name`", never as a bare slash mention. User-invoked skills set `disable-model-invocation: true` and cannot be reached by other skills.
-- When a skill is added, renamed, or removed, update `ask-poamslayer` so the router never lies.
+- When a skill is added, renamed, or removed, update `ask-poamslayer` so the router never lies, and the `skills` list in `.claude-plugin/plugin.json` so the plugin loads it.
 - Never edit `docs/fixture/engagement/` in place; `python3 scripts/cold_run.py --skill <name>` makes the copy. A deliberate change to the fixture's starting state, such as converting its SSP, is made in a cold-run copy through the skills that own it (scribe, for the record), reviewed, and only then copied back, with its command list and reasoning recorded in `docs/cold-runs/`.
 - When a cold run disagrees with the fixture's answer key, read the reasoning before deciding which is wrong. The key has been wrong before.
 
@@ -29,7 +33,7 @@ Every skill is one folder with a `SKILL.md` in the shape mattpocock/skills uses,
 
 ### Issue tracker
 
-Issues are tracked as GitHub Issues on `poamslayer/cmmcslayer` via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues are tracked as GitHub Issues on `poamslayer/cmmcslayer-private`, the working repository (not the public snapshot, `poamslayer/cmmcslayer`), via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
